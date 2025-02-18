@@ -1,0 +1,8 @@
+.wwads-cn {
+    filter: blur(var(--blur-amount)) !important;
+    transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
+}
+
+.wwads-cn:hover {
+    filter: blur(0px) !important;
+}

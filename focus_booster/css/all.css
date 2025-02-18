@@ -1,0 +1,15 @@
+:root {
+    --blur-amount: 5px; /* 初始模糊值 */
+    --filter-transition-duration: 0.1s;  /* 过渡持续时间 */
+    --filter-transition-timing: ease-in-out;  /* 过渡效果 */
+}
+
+div[id^="google_ads_iframe_"],
+.adsbygoogle {
+    filter: blur(var(--blur-amount)) !important;
+    transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
+}
+div[id^="google_ads_iframe_"]:hover,
+.adsbygoogle:hover {
+    filter: blur(0px) !important;
+}

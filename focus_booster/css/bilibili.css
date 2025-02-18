@@ -1,0 +1,12 @@
+.bili-video-card__wrap:has(.bili-video-card__info--ad),
+#slide_ad,
+.ad-report {
+    filter: blur(var(--blur-amount)) !important;
+    transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
+}
+
+.bili-video-card__wrap:has(.bili-video-card__info--ad):hover,
+#slide_ad:hover,
+.ad-report:hover {
+    filter: blur(0px) !important;
+}

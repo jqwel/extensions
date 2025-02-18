@@ -1,0 +1,12 @@
+.gp2k11k:has(.ec-tuiguang),
+.c-container:has(.ec-tuiguang),
+.cr-content:has(.ec-tuiguang) {
+    filter: blur(var(--blur-amount)) !important;
+    transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
+}
+
+.gp2k11k:has(.ec-tuiguang):hover,
+.c-container:has(.ec-tuiguang):hover,
+.cr-content:has(.ec-tuiguang):hover {
+    filter: blur(0px) !important;
+}

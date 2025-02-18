@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "FocusBoost",
+  "version": "1.0",
+  "description": "FocusBoost is an innovative visual enhancement tool designed to elevate the clarity and focus of webpages and app interfaces. By intelligently adjusting blur levels and visual effects, FocusBoost effortlessly removes distracting elements, allowing users to concentrate on key content. Whether it's improving text readability or highlighting details in images and elements, FocusBoost provides a clearer, more engaging visual experience.",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": [
+    "*://www.baidu.com/*",
+    "*://www.bilibili.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "css": ["css/all.css"]
+    },
+    {
+      "matches": ["*://www.baidu.com/*"],
+      "css": ["css/baidu.css"]
+    },
+    {
+      "matches": ["*://www.bilibili.com/*"],
+      "css": ["css/bilibili.css"]
+    },
+    {
+      "matches": ["*://www.mydrivers.com/*"],
+      "css": ["css/mydrivers.css"]
+    },
+    {
+      "matches": ["*://www.v2ex.com/*"],
+      "css": ["css/v2ex.css"]
+    }
+  ],
+  "icons": {
+    "64": "icon.png"
+  }
+}

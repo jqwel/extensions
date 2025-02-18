@@ -1,0 +1,12 @@
+li:has(.c) {
+    filter: blur(var(--blur-amount)) !important;
+    transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
+}
+
+li:has(.c):hover {
+    filter: blur(0px) !important;
+}
+
+body {
+    background-color: black !important;
+}
