@@ -1,0 +1,5 @@
+{
+    filter: blur(var(--blur-amount)) !important;
+    transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
+    overflow: hidden;
+}

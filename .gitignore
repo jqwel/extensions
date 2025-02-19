@@ -9,3 +9,7 @@ package.json.md5
 *-res.syso
 go.work
 go.work.sum
+*.pem
+*.crx
+*.zip
+test/*

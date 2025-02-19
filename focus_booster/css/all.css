@@ -1,15 +1,52 @@
 :root {
-    --blur-amount: 5px; /* 初始模糊值 */
-    --filter-transition-duration: 0.1s;  /* 过渡持续时间 */
-    --filter-transition-timing: ease-in-out;  /* 过渡效果 */
+    --blur-amount: 0px;
+    --filter-transition-duration: 0.1s;
+    --filter-transition-timing: ease-in-out;
+    --content-ad-font-size: max((calc(min(7vw, 7vh, 512px)) + calc(min(10vw, 10vh) + 32px)) / 1.6, 32px);
 }
 
+@font-face {
+    font-family: 'MyCustomFont';
+    src: url('chrome-extension://__MSG_@@extension_id__/fonts/hyzlsJ.ttf') format('truetype');
+}
+
+.__focus_booster,
 div[id^="google_ads_iframe_"],
 .adsbygoogle {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
+    overflow: hidden;
 }
+
+.__focus_booster:hover,
 div[id^="google_ads_iframe_"]:hover,
 .adsbygoogle:hover {
     filter: blur(0px) !important;
+    overflow: visible;
+}
+
+.__focus_booster::after,
+div[id^="google_ads_iframe_"]::after,
+.adsbygoogle::after {
+    content: "广告";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-10deg);
+    background: rgba(255, 255, 255, 0.45);
+    color: rgba(204, 0, 0, 0.65);
+    display: inline-flex;
+    padding: 20px 24px;
+    border: 2px solid rgba(204, 0, 0, 0.45);
+    font-size: max(40px, min(5em, 72px));
+    font-family: 'MyCustomFont', sans-serif;
+    border-radius: 5px;
+    z-index: 999999999;
+    pointer-events: none;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.3),
+    0 0 8px rgba(255, 255, 255, 0.3),
+    0 0 12px rgba(255, 255, 255, 0.3);
+    white-space: nowrap;
+    box-shadow: 0 0 0 2px rgba(204,0,0,0.35),
+    inset 0 0 0 1px rgba(255,255,255,0.2);
 }
