@@ -1,6 +1,6 @@
 ytd-ad-slot-renderer,
 #player-ads,
-#masthead-ad {
+#masthead-ad:not(:has(ytd-ad-slot-renderer)) {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
@@ -8,14 +8,14 @@ ytd-ad-slot-renderer,
 
 ytd-ad-slot-renderer:hover,
 #player-ads:hover,
-#masthead-ad:hover {
+#masthead-ad:not(:has(ytd-ad-slot-renderer)):hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
 ytd-ad-slot-renderer::after,
 #player-ads::after,
-#masthead-ad::after {
+#masthead-ad:not(:has(ytd-ad-slot-renderer))::after {
     content: "广告";
     position: absolute;
     top: 50%;
@@ -27,7 +27,7 @@ ytd-ad-slot-renderer::after,
     padding: 20px 24px;
     border: 2px solid rgba(204, 0, 0, 0.45);
     font-size: max(40px, min(5em, 72px));
-    font-family: 'MyCustomFont', sans-serif;
+    font-family: "STBaoliTC-Regular", "LiSu", "STLiti", cursive;
     border-radius: 5px;
     z-index: 999999999;
     pointer-events: none;

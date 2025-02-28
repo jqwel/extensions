@@ -24,7 +24,7 @@
     padding: 20px 24px;
     border: 2px solid rgba(204, 0, 0, 0.45);
     font-size: max(40px, min(5em, 72px));
-    font-family: 'MyCustomFont', sans-serif;
+    font-family: "STBaoliTC-Regular", "LiSu", "STLiti", cursive;
     border-radius: 5px;
     z-index: 999999999;
     pointer-events: none;

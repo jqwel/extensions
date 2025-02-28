@@ -110,7 +110,7 @@ func main() {
 			Selectors: []string{
 				`ytd-ad-slot-renderer`,
 				`#player-ads`,
-				`#masthead-ad`,
+				`#masthead-ad:not(:has(ytd-ad-slot-renderer))`,
 			},
 		},
 		{

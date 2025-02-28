@@ -4,8 +4,3 @@
     --filter-transition-timing: ease-in-out;
     --content-ad-font-size: max((calc(min(7vw, 7vh, 512px)) + calc(min(10vw, 10vh) + 32px)) / 1.6, 32px);
 }
-
-@font-face {
-    font-family: 'MyCustomFont';
-    src: url('chrome-extension://__MSG_@@extension_id__/fonts/hyzlsJ.ttf') format('truetype');
-}

@@ -18,7 +18,7 @@
     },
     {
       "matches": ["<all_urls>"],
-      "css": ["css/all.css"]
+      "css": ["css/all.css", "css/ext-font.css"]
     },
     {
       "matches": ["*://*.baidu.com/*"],
