@@ -1,15 +1,15 @@
-.wwads-cn {
+div[data-text-ad="1"] {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-.wwads-cn:hover {
+div[data-text-ad="1"]:hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-.wwads-cn::after {
+div[data-text-ad="1"]::after {
     content: "广告";
     position: absolute;
     top: 50%;

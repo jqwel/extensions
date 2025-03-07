@@ -1,15 +1,15 @@
-.wwads-cn {
+.x1yztbdb:has(a[href^="/ads/about/?"]) {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-.wwads-cn:hover {
+.x1yztbdb:has(a[href^="/ads/about/?"]):hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-.wwads-cn::after {
+.x1yztbdb:has(a[href^="/ads/about/?"])::after {
     content: "广告";
     position: absolute;
     top: 50%;

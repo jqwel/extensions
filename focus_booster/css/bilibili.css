@@ -1,12 +1,40 @@
 .bili-video-card__wrap:has(.bili-video-card__info--ad),
-#slide_ad,
 .ad-report {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
+    overflow: hidden;
 }
 
 .bili-video-card__wrap:has(.bili-video-card__info--ad):hover,
-#slide_ad:hover,
 .ad-report:hover {
     filter: blur(0px) !important;
+    overflow: visible;
 }
+
+.bili-video-card__wrap:has(.bili-video-card__info--ad)::after,
+.ad-report::after {
+    content: "广告";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    background: rgba(255, 255, 255, 0.45);
+    color: rgba(204, 0, 0, 0.55);
+    display: inline-flex;
+    padding: 40px 40px;
+    border: 6px solid rgba(204, 0, 0, 0.43);
+    font-size: max(48px, min(8em, 88px));
+    font-family: "STBaoliTC-Regular", "LiSu", "STLiti", cursive;
+    border-radius: 5px;
+    z-index: 999999999;
+    pointer-events: none;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.3),
+    0 0 8px rgba(255, 255, 255, 0.3),
+    0 0 12px rgba(255, 255, 255, 0.3);
+    white-space: nowrap;
+    box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0 2px rgba(204, 0, 0, 0.6), /* Outer shadow */
+    inset 0 0 5px rgba(204, 0, 0, 0.75); /* Inner shadow with 3px spread */
+}
+

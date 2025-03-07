@@ -1,15 +1,21 @@
-.wwads-cn {
+.ad-cell-common,
+.channel-feed-item:has(.adCode),
+.rectangle-ad-channel {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-.wwads-cn:hover {
+.ad-cell-common:hover,
+.channel-feed-item:has(.adCode):hover,
+.rectangle-ad-channel:hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-.wwads-cn::after {
+.ad-cell-common::after,
+.channel-feed-item:has(.adCode)::after,
+.rectangle-ad-channel::after {
     content: "广告";
     position: absolute;
     top: 50%;

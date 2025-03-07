@@ -1,15 +1,21 @@
-.wwads-cn {
+ytd-ad-slot-renderer,
+#player-ads,
+#masthead-ad:not(:has(ytd-ad-slot-renderer)) {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-.wwads-cn:hover {
+ytd-ad-slot-renderer:hover,
+#player-ads:hover,
+#masthead-ad:not(:has(ytd-ad-slot-renderer)):hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-.wwads-cn::after {
+ytd-ad-slot-renderer::after,
+#player-ads::after,
+#masthead-ad:not(:has(ytd-ad-slot-renderer))::after {
     content: "广告";
     position: absolute;
     top: 50%;

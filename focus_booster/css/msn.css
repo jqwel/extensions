@@ -1,15 +1,15 @@
-.wwads-cn {
+/deep/cs-native-ad-card:has(.ad-label-text) {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-.wwads-cn:hover {
+/deep/cs-native-ad-card:has(.ad-label-text):hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-.wwads-cn::after {
+/deep/cs-native-ad-card:has(.ad-label-text)::after {
     content: "广告";
     position: absolute;
     top: 50%;

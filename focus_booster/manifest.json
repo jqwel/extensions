@@ -2,35 +2,84 @@
   "manifest_version": 3,
   "name": "FocusBoost",
   "version": "1.0",
-  "description": "FocusBoost is an innovative visual enhancement tool designed to elevate the clarity and focus of webpages and app interfaces. By intelligently adjusting blur levels and visual effects, FocusBoost effortlessly removes distracting elements, allowing users to concentrate on key content. Whether it's improving text readability or highlighting details in images and elements, FocusBoost provides a clearer, more engaging visual experience.",
+  "description": "FocusBoost is an innovative visual enhancement tool designed to elevate the clarity and focus of webpages and app interfaces.",
   "permissions": ["activeTab", "scripting"],
-  "host_permissions": [
-    "*://www.baidu.com/*",
-    "*://www.bilibili.com/*"
+  "web_accessible_resources": [
+    {
+      "resources": ["css/*.css", "fonts/*.ttf", "fonts/*.woff"],
+      "matches": ["<all_urls>"]
+    }
   ],
   "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    },
     {
       "matches": ["<all_urls>"],
       "css": ["css/all.css"]
     },
     {
-      "matches": ["*://www.baidu.com/*"],
+      "matches": ["*://*.baidu.com/*"],
       "css": ["css/baidu.css"]
     },
     {
-      "matches": ["*://www.bilibili.com/*"],
+      "matches": ["*://*.bilibili.com/*"],
       "css": ["css/bilibili.css"]
     },
     {
-      "matches": ["*://www.mydrivers.com/*"],
+      "matches": ["*://*.mydrivers.com/*"],
       "css": ["css/mydrivers.css"]
     },
     {
-      "matches": ["*://www.v2ex.com/*"],
+      "matches": ["*://*.163.com/*"],
+      "css": ["css/netease.css"]
+    },
+    {
+      "matches": ["*://*.qq.com/*"],
+      "css": ["css/qq.css"]
+    },
+    {
+      "matches": ["*://*.v2ex.com/*"],
       "css": ["css/v2ex.css"]
+    },
+    {
+      "matches": ["*://*.bing.com/*"],
+      "css": ["css/bing.css"]
+    },
+    {
+      "matches": ["*://*.duckduckgo.com/*"],
+      "css": ["css/duckduckgo.css"]
+    },
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "css": ["css/youtube.css"]
+    },
+    {
+      "matches": ["*://*.facebook.com/*"],
+      "css": ["css/facebook.css"]
+    },
+    {
+      "matches": [
+        "*://*.google.com/*",
+        "*://*.google.com.hk/*",
+        "*://*.google.co.jp/*",
+        "*://*.google.com.tw/*"
+      ],
+      "css": ["css/google.css"]
+    },
+    {
+      "matches": ["*://*.msn.com/*"],
+      "css": ["css/msn.css"],
+      "js": ["js/msn.js"]
+    },
+    {
+      "matches": ["*://*.x.com/*"],
+      "css": ["css/x.css"]
     }
   ],
   "icons": {
-    "64": "icon.png"
+    "128": "icon.png"
   }
 }
