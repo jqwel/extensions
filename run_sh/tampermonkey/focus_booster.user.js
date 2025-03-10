@@ -12,6 +12,12 @@
 
   // 配置不同网站的 JS 和 CSS
   const siteConfigs = {
+    ".2345.com": {
+      css: $CSS_CONTENT$2345$
+    },
+    ".360.com": {
+      css: $CSS_CONTENT$2345$
+    },
     ".baidu.com": {
       css: $CSS_CONTENT$baidu$
     },
@@ -42,6 +48,9 @@
     },
     ".qq.com": {
       css: $CSS_CONTENT$qq$
+    },
+    ".so.com": {
+      css: $CSS_CONTENT$so$
     },
     ".v2ex.com": {
       css: $CSS_CONTENT$v2ex$

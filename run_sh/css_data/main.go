@@ -31,6 +31,19 @@ func main() {
 			Prefix: rootcss,
 		},
 		{
+			Filename: "2345.css",
+			Selectors: []string{
+				".xxl-ad-360",
+			},
+		},
+		{
+			Filename: "360.css",
+			Selectors: []string{
+				".uni-flow-card:has(.ad)",
+				".cube-mod:has(.ad-flag)",
+			},
+		},
+		{
 			Filename: "baidu.css",
 			Selectors: []string{
 				".c-container:has(.ec-tuiguang)",
@@ -104,6 +117,12 @@ func main() {
 				`.ad-cell-common`,
 				`.channel-feed-item:has(.adCode)`,
 				`.rectangle-ad-channel`,
+			},
+		},
+		{
+			Filename: "so.css",
+			Selectors: []string{
+				`.e-buss li`,
 			},
 		},
 		{

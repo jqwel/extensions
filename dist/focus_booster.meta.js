@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         标注广告
 // @namespace    http://tampermonkey.net/
-// @version      1.20250307.183640
+// @version      1.20250310.154627
 // @description  加载不同的JS和CSS,标注广告
 // @author       YLZ
 // @match        *://*/*

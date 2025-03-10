@@ -37,6 +37,8 @@ gulp.task("inject-css", function () {
 
   return gulp.src("./run_sh/tampermonkey/focus_booster.user.js")
       .pipe(replace("$CSS_CONTENT$GLOBAL$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/all.css", "utf8"))}\``))
+      .pipe(replace("$CSS_CONTENT$2345$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/2345.css", "utf8"))}\``))
+      .pipe(replace("$CSS_CONTENT$360$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/360.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$baidu$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/baidu.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$bilibili$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/bilibili.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$bing$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/bing.css", "utf8"))}\``))
@@ -48,6 +50,7 @@ gulp.task("inject-css", function () {
       .pipe(replace("$CSS_CONTENT$mydrivers$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/mydrivers.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$163$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/netease.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$qq$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/qq.css", "utf8"))}\``))
+      .pipe(replace("$CSS_CONTENT$so$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/so.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$v2ex$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/v2ex.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$x$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/x.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$youtube$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/youtube.css", "utf8"))}\``))

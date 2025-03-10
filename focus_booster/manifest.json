@@ -21,6 +21,14 @@
       "css": ["css/all.css"]
     },
     {
+      "matches": ["*://*.2345.com/*"],
+      "css": ["css/2345.css"]
+    },
+    {
+      "matches": ["*://*.360.com/*"],
+      "css": ["css/360.css"]
+    },
+    {
       "matches": ["*://*.baidu.com/*"],
       "css": ["css/baidu.css"]
     },
@@ -39,6 +47,10 @@
     {
       "matches": ["*://*.qq.com/*"],
       "css": ["css/qq.css"]
+    },
+    {
+      "matches": ["*://*.so.com/*"],
+      "css": ["css/so.css"]
     },
     {
       "matches": ["*://*.v2ex.com/*"],

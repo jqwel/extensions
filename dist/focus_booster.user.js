@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         标注广告
 // @namespace    http://tampermonkey.net/
-// @version      1.20250307.183640
+// @version      1.20250310.154627
 // @description  加载不同的JS和CSS,标注广告
 // @author       YLZ
 // @match        *://*/*
@@ -27,6 +27,12 @@
 
   // 配置不同网站的 JS 和 CSS
   const siteConfigs = {
+    ".2345.com": {
+      css: `.xxl-ad-360{filter:blur(var(--blur-amount))!important;transition:filter var(--filter-transition-duration) var(--filter-transition-timing);overflow:hidden}.xxl-ad-360:hover{filter:blur(0px)!important;overflow:visible}.xxl-ad-360::after{content:"广告";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);background:rgba(255,255,255,.45);color:rgba(204,0,0,.55);display:inline-flex;padding:40px 40px;border:6px solid rgba(204,0,0,.43);font-size:max(48px, min(8em, 88px));font-family:STBaoliTC-Regular,LiSu,STLiti,cursive;border-radius:5px;z-index:999999999;pointer-events:none;text-shadow:0 0 4px rgba(255,255,255,.3),0 0 8px rgba(255,255,255,.3),0 0 12px rgba(255,255,255,.3);white-space:nowrap;box-shadow:0 0 0 3px rgba(204,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.2),0 0 2px rgba(204,0,0,.6),inset 0 0 5px rgba(204,0,0,.75)}`
+    },
+    ".360.com": {
+      css: `.xxl-ad-360{filter:blur(var(--blur-amount))!important;transition:filter var(--filter-transition-duration) var(--filter-transition-timing);overflow:hidden}.xxl-ad-360:hover{filter:blur(0px)!important;overflow:visible}.xxl-ad-360::after{content:"广告";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);background:rgba(255,255,255,.45);color:rgba(204,0,0,.55);display:inline-flex;padding:40px 40px;border:6px solid rgba(204,0,0,.43);font-size:max(48px, min(8em, 88px));font-family:STBaoliTC-Regular,LiSu,STLiti,cursive;border-radius:5px;z-index:999999999;pointer-events:none;text-shadow:0 0 4px rgba(255,255,255,.3),0 0 8px rgba(255,255,255,.3),0 0 12px rgba(255,255,255,.3);white-space:nowrap;box-shadow:0 0 0 3px rgba(204,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.2),0 0 2px rgba(204,0,0,.6),inset 0 0 5px rgba(204,0,0,.75)}`
+    },
     ".baidu.com": {
       css: `.c-container:has(.ec-tuiguang),.cr-content:has(.ec-tuiguang),.mediago-ad-wrapper,div[class^=unionAd_],div[data-cmatchid]:has(.ec-tuiguang){filter:blur(var(--blur-amount))!important;transition:filter var(--filter-transition-duration) var(--filter-transition-timing);overflow:hidden}.c-container:has(.ec-tuiguang):hover,.cr-content:has(.ec-tuiguang):hover,.mediago-ad-wrapper:hover,div[class^=unionAd_]:hover,div[data-cmatchid]:has(.ec-tuiguang):hover{filter:blur(0px)!important;overflow:visible}.c-container:has(.ec-tuiguang)::after,.cr-content:has(.ec-tuiguang)::after,.mediago-ad-wrapper::after,div[class^=unionAd_]::after,div[data-cmatchid]:has(.ec-tuiguang)::after{content:"广告";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);background:rgba(255,255,255,.45);color:rgba(204,0,0,.55);display:inline-flex;padding:40px 40px;border:6px solid rgba(204,0,0,.43);font-size:max(48px, min(8em, 88px));font-family:STBaoliTC-Regular,LiSu,STLiti,cursive;border-radius:5px;z-index:999999999;pointer-events:none;text-shadow:0 0 4px rgba(255,255,255,.3),0 0 8px rgba(255,255,255,.3),0 0 12px rgba(255,255,255,.3);white-space:nowrap;box-shadow:0 0 0 3px rgba(204,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.2),0 0 2px rgba(204,0,0,.6),inset 0 0 5px rgba(204,0,0,.75)}`
     },
@@ -57,6 +63,9 @@
     },
     ".qq.com": {
       css: `.ad-cell-common,.channel-feed-item:has(.adCode),.rectangle-ad-channel{filter:blur(var(--blur-amount))!important;transition:filter var(--filter-transition-duration) var(--filter-transition-timing);overflow:hidden}.ad-cell-common:hover,.channel-feed-item:has(.adCode):hover,.rectangle-ad-channel:hover{filter:blur(0px)!important;overflow:visible}.ad-cell-common::after,.channel-feed-item:has(.adCode)::after,.rectangle-ad-channel::after{content:"广告";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);background:rgba(255,255,255,.45);color:rgba(204,0,0,.55);display:inline-flex;padding:40px 40px;border:6px solid rgba(204,0,0,.43);font-size:max(48px, min(8em, 88px));font-family:STBaoliTC-Regular,LiSu,STLiti,cursive;border-radius:5px;z-index:999999999;pointer-events:none;text-shadow:0 0 4px rgba(255,255,255,.3),0 0 8px rgba(255,255,255,.3),0 0 12px rgba(255,255,255,.3);white-space:nowrap;box-shadow:0 0 0 3px rgba(204,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.2),0 0 2px rgba(204,0,0,.6),inset 0 0 5px rgba(204,0,0,.75)}`
+    },
+    ".so.com": {
+      css: `.e-buss li{filter:blur(var(--blur-amount))!important;transition:filter var(--filter-transition-duration) var(--filter-transition-timing);overflow:hidden}.e-buss li:hover{filter:blur(0px)!important;overflow:visible}.e-buss li::after{content:"广告";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);background:rgba(255,255,255,.45);color:rgba(204,0,0,.55);display:inline-flex;padding:40px 40px;border:6px solid rgba(204,0,0,.43);font-size:max(48px, min(8em, 88px));font-family:STBaoliTC-Regular,LiSu,STLiti,cursive;border-radius:5px;z-index:999999999;pointer-events:none;text-shadow:0 0 4px rgba(255,255,255,.3),0 0 8px rgba(255,255,255,.3),0 0 12px rgba(255,255,255,.3);white-space:nowrap;box-shadow:0 0 0 3px rgba(204,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.2),0 0 2px rgba(204,0,0,.6),inset 0 0 5px rgba(204,0,0,.75)}`
     },
     ".v2ex.com": {
       css: `.wwads-cn{filter:blur(var(--blur-amount))!important;transition:filter var(--filter-transition-duration) var(--filter-transition-timing);overflow:hidden}.wwads-cn:hover{filter:blur(0px)!important;overflow:visible}.wwads-cn::after{content:"广告";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);background:rgba(255,255,255,.45);color:rgba(204,0,0,.55);display:inline-flex;padding:40px 40px;border:6px solid rgba(204,0,0,.43);font-size:max(48px, min(8em, 88px));font-family:STBaoliTC-Regular,LiSu,STLiti,cursive;border-radius:5px;z-index:999999999;pointer-events:none;text-shadow:0 0 4px rgba(255,255,255,.3),0 0 8px rgba(255,255,255,.3),0 0 12px rgba(255,255,255,.3);white-space:nowrap;box-shadow:0 0 0 3px rgba(204,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.2),0 0 2px rgba(204,0,0,.6),inset 0 0 5px rgba(204,0,0,.75)}`
