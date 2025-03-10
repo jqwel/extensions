@@ -1,37 +1,18 @@
-:root {
-    --blur-amount: 0px;
-    --filter-transition-duration: 0.1s;
-    --filter-transition-timing: ease-in-out;
-    --content-ad-font-size: max((calc(min(7vw, 7vh, 512px)) + calc(min(10vw, 10vh) + 32px)) / 1.6, 32px);
-}
-
-.__focus_booster,
-div[id^="google_ads_iframe_"],
-.adsbygoogle,
-div:has(> iframe[src^="https://pos.baidu.com/"]),
-div:has(> iframe[src^="//pos.baidu.com/"]),
-div[class$='-ad'] {
+.sinaads:not(.sinaads-fail),
+.sinaads-float {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-.__focus_booster:hover,
-div[id^="google_ads_iframe_"]:hover,
-.adsbygoogle:hover,
-div:has(> iframe[src^="https://pos.baidu.com/"]):hover,
-div:has(> iframe[src^="//pos.baidu.com/"]):hover,
-div[class$='-ad']:hover {
+.sinaads:not(.sinaads-fail):hover,
+.sinaads-float:hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-.__focus_booster::after,
-div[id^="google_ads_iframe_"]::after,
-.adsbygoogle::after,
-div:has(> iframe[src^="https://pos.baidu.com/"])::after,
-div:has(> iframe[src^="//pos.baidu.com/"])::after,
-div[class$='-ad']::after {
+.sinaads:not(.sinaads-fail)::after,
+.sinaads-float::after {
     content: "广告";
     position: absolute;
     top: 50%;

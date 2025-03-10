@@ -49,12 +49,24 @@
       "css": ["css/qq.css"]
     },
     {
+      "matches": ["*://*.sina.com.cn/*"],
+      "css": ["css/sina.css"]
+    },
+    {
       "matches": ["*://*.so.com/*"],
       "css": ["css/so.css"]
     },
     {
+      "matches": ["*://*.sogou.com/*"],
+      "css": ["css/sogou.css"]
+    },
+    {
       "matches": ["*://*.v2ex.com/*"],
       "css": ["css/v2ex.css"]
+    },
+    {
+      "matches": ["*://*.weibo.com/*"],
+      "css": ["css/weibo.css"]
     },
     {
       "matches": ["*://*.bing.com/*"],

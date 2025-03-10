@@ -50,8 +50,11 @@ gulp.task("inject-css", function () {
       .pipe(replace("$CSS_CONTENT$mydrivers$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/mydrivers.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$163$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/netease.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$qq$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/qq.css", "utf8"))}\``))
+      .pipe(replace("$CSS_CONTENT$sina$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/sina.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$so$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/so.css", "utf8"))}\``))
+      .pipe(replace("$CSS_CONTENT$sogou$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/sogou.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$v2ex$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/v2ex.css", "utf8"))}\``))
+      .pipe(replace("$CSS_CONTENT$weibo$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/weibo.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$x$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/x.css", "utf8"))}\``))
       .pipe(replace("$CSS_CONTENT$youtube$", `\`${minifyCSS(fs.readFileSync("./focus_booster/css/youtube.css", "utf8"))}\``))
       .pipe(replace(/^/, metaContent + "\n")) // 在文件开头添加 meta 内容

@@ -27,6 +27,8 @@ func main() {
 				`div[id^="google_ads_iframe_"]`,
 				".adsbygoogle",
 				`div:has(> iframe[src^="https://pos.baidu.com/"])`,
+				`div:has(> iframe[src^="//pos.baidu.com/"])`,
+				`div[class$='-ad']`,
 			},
 			Prefix: rootcss,
 		},
@@ -120,15 +122,39 @@ func main() {
 			},
 		},
 		{
+			Filename: "sina.css",
+			Selectors: []string{
+				`.sinaads:not(.sinaads-fail)`,
+				`.sinaads-float`,
+			},
+		},
+		{
 			Filename: "so.css",
 			Selectors: []string{
 				`.e-buss li`,
 			},
 		},
 		{
+			Filename: "sogou.css",
+			Selectors: []string{
+				`.sponsored-ams > div`,
+				`.sdk-ad-side-banner-hover`,
+				`.art-container:has(.feed-item-close)`,
+				`[class^="shopWindow_shopWindowAd"]:not([class^="shopWindow_shopWindowAd"] [class^="shopWindow_shopWindowAd"])`, // `:is([class^="shopWindow_shopWindowAd"])`,
+				`.sdk-ad`,
+			},
+		},
+		{
 			Filename: "v2ex.css",
 			Selectors: []string{
 				`.wwads-cn`,
+			},
+		},
+		{
+			Filename: "weibo.css",
+			Selectors: []string{
+				`.vue-recycle-scroller__item-view:has(.wbpro-tag-img)`,
+				`:is([class*=" TipsAd_picture_"], [class^="TipsAd_picture_"])`,
 			},
 		},
 		{

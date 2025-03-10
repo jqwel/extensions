@@ -49,11 +49,20 @@
     ".qq.com": {
       css: $CSS_CONTENT$qq$
     },
+    ".sina.com.cn": {
+      css: $CSS_CONTENT$sina$
+    },
     ".so.com": {
       css: $CSS_CONTENT$so$
     },
+    ".sogou.com": {
+      css: $CSS_CONTENT$sogou$
+    },
     ".v2ex.com": {
       css: $CSS_CONTENT$v2ex$
+    },
+    ".weibo.com": {
+      css: $CSS_CONTENT$weibo$
     },
     ".x.com": {
       css: $CSS_CONTENT$x$
