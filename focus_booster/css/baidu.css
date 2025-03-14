@@ -1,12 +1,50 @@
-.gp2k11k:has(.ec-tuiguang),
-.c-container:has(.ec-tuiguang),
-.cr-content:has(.ec-tuiguang) {
+.c-container:has(.ec-tuiguang):not(:has(div[data-cmatchid])),
+.cr-content:has(.ec-tuiguang):not(:has(div[data-cmatchid])),
+.mediago-ad-wrapper,
+div[class^="unionAd_"],
+div[data-cmatchid]:has(.ec-tuiguang) {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
+    overflow: hidden;
 }
 
-.gp2k11k:has(.ec-tuiguang):hover,
-.c-container:has(.ec-tuiguang):hover,
-.cr-content:has(.ec-tuiguang):hover {
+.c-container:has(.ec-tuiguang):not(:has(div[data-cmatchid])):hover,
+.cr-content:has(.ec-tuiguang):not(:has(div[data-cmatchid])):hover,
+.mediago-ad-wrapper:hover,
+div[class^="unionAd_"]:hover,
+div[data-cmatchid]:has(.ec-tuiguang):hover {
     filter: blur(0px) !important;
+    overflow: visible;
 }
+
+.c-container:has(.ec-tuiguang):not(:has(div[data-cmatchid]))::after,
+.cr-content:has(.ec-tuiguang):not(:has(div[data-cmatchid]))::after,
+.mediago-ad-wrapper::after,
+div[class^="unionAd_"]::after,
+div[data-cmatchid]:has(.ec-tuiguang)::after {
+    content: "广告";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    filter: blur(1px);
+    transform: translate(-50%, -50%) rotate(-30deg);
+    background: rgba(255, 255, 255, 0.45);
+    color: rgba(204, 62, 62, 0.55);
+    display: inline-flex;
+    padding: 40px 40px;
+    border: 6px solid rgba(204, 62, 62, 0.43);
+    font-size: max(48px, min(8em, 88px));
+    font-family: "STBaoliTC-Regular", "LiSu", "STLiti", cursive;
+    border-radius: 7px;
+    z-index: 999999;
+    pointer-events: none;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.3),
+    0 0 8px rgba(255, 255, 255, 0.3),
+    0 0 12px rgba(255, 255, 255, 0.3);
+    white-space: nowrap;
+    box-shadow: 0 0 0 3px rgba(204, 62, 62, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0 2px rgba(204, 62, 62, 0.6), /* Outer shadow */
+    inset 0 0 5px rgba(204, 62, 62, 0.75); /* Inner shadow with 3px spread */
+}
+

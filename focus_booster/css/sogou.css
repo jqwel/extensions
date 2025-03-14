@@ -1,18 +1,27 @@
-li:has(.c),
-.good_ths li {
+.sponsored-ams > div,
+.sdk-ad-side-banner-hover,
+.art-container:has(.feed-item-close),
+[class^="shopWindow_shopWindowAd"]:not([class^="shopWindow_shopWindowAd"] [class^="shopWindow_shopWindowAd"]),
+.sdk-ad {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-li:has(.c):hover,
-.good_ths li:hover {
+.sponsored-ams > div:hover,
+.sdk-ad-side-banner-hover:hover,
+.art-container:has(.feed-item-close):hover,
+[class^="shopWindow_shopWindowAd"]:not([class^="shopWindow_shopWindowAd"] [class^="shopWindow_shopWindowAd"]):hover,
+.sdk-ad:hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-li:has(.c)::after,
-.good_ths li::after {
+.sponsored-ams > div::after,
+.sdk-ad-side-banner-hover::after,
+.art-container:has(.feed-item-close)::after,
+[class^="shopWindow_shopWindowAd"]:not([class^="shopWindow_shopWindowAd"] [class^="shopWindow_shopWindowAd"])::after,
+.sdk-ad::after {
     content: "广告";
     position: absolute;
     top: 50%;
@@ -39,7 +48,3 @@ li:has(.c)::after,
     inset 0 0 5px rgba(204, 62, 62, 0.75); /* Inner shadow with 3px spread */
 }
 
-
-body {
-    background-color: black !important;
-}

@@ -1,18 +1,18 @@
-li:has(.c),
-.good_ths li {
+.vue-recycle-scroller__item-view:has(.wbpro-tag-img),
+:is([class*=" TipsAd_picture_"], [class^="TipsAd_picture_"]) {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-li:has(.c):hover,
-.good_ths li:hover {
+.vue-recycle-scroller__item-view:has(.wbpro-tag-img):hover,
+:is([class*=" TipsAd_picture_"], [class^="TipsAd_picture_"]):hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-li:has(.c)::after,
-.good_ths li::after {
+.vue-recycle-scroller__item-view:has(.wbpro-tag-img)::after,
+:is([class*=" TipsAd_picture_"], [class^="TipsAd_picture_"])::after {
     content: "广告";
     position: absolute;
     top: 50%;
@@ -39,7 +39,3 @@ li:has(.c)::after,
     inset 0 0 5px rgba(204, 62, 62, 0.75); /* Inner shadow with 3px spread */
 }
 
-
-body {
-    background-color: black !important;
-}

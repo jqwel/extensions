@@ -1,0 +1,32 @@
+{
+  "name": "extensions",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jqwel/extensions.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jqwel/extensions/issues"
+  },
+  "homepage": "https://github.com/jqwel/extensions#readme",
+  "description": "",
+  "devDependencies": {
+    "clean-css": "^5.3.3",
+    "fs-extra": "^11.3.0",
+    "gulp": "^5.0.0",
+    "gulp-replace": "^1.1.4",
+    "terser": "^5.39.0",
+    "through2": "^4.0.2"
+  }
+}

@@ -1,18 +1,24 @@
-li:has(.c),
-.good_ths li {
+.ad-cell-common,
+.channel-feed-item:has(.adCode),
+.rectangle-ad-channel,
+div[adconfig_key] {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-li:has(.c):hover,
-.good_ths li:hover {
+.ad-cell-common:hover,
+.channel-feed-item:has(.adCode):hover,
+.rectangle-ad-channel:hover,
+div[adconfig_key]:hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-li:has(.c)::after,
-.good_ths li::after {
+.ad-cell-common::after,
+.channel-feed-item:has(.adCode)::after,
+.rectangle-ad-channel::after,
+div[adconfig_key]::after {
     content: "广告";
     position: absolute;
     top: 50%;
@@ -39,7 +45,3 @@ li:has(.c)::after,
     inset 0 0 5px rgba(204, 62, 62, 0.75); /* Inner shadow with 3px spread */
 }
 
-
-body {
-    background-color: black !important;
-}
