@@ -1,21 +1,42 @@
-.bili-video-card__wrap:has(.bili-video-card__info--ad),
-.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]),
-.ad-report {
+.sponsored-ams > div,
+.sdk-ad-side-banner-hover,
+.art-container:has(.feed-item-close),
+[class^="shopWindow_shopWindowAd"]:not([class^="shopWindow_shopWindowAd"] [class^="shopWindow_shopWindowAd"]),
+.sdk-ad,
+#ad-top-static-banner,
+#ad_result_right,
+#opening-ad,
+.ad-icon-side-banner,
+a[dt-eid="ads_top"] {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-.bili-video-card__wrap:has(.bili-video-card__info--ad):hover,
-.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]):hover,
-.ad-report:hover {
+.sponsored-ams > div:hover,
+.sdk-ad-side-banner-hover:hover,
+.art-container:has(.feed-item-close):hover,
+[class^="shopWindow_shopWindowAd"]:not([class^="shopWindow_shopWindowAd"] [class^="shopWindow_shopWindowAd"]):hover,
+.sdk-ad:hover,
+#ad-top-static-banner:hover,
+#ad_result_right:hover,
+#opening-ad:hover,
+.ad-icon-side-banner:hover,
+a[dt-eid="ads_top"]:hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-.bili-video-card__wrap:has(.bili-video-card__info--ad)::after,
-.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"])::after,
-.ad-report::after {
+.sponsored-ams > div::after,
+.sdk-ad-side-banner-hover::after,
+.art-container:has(.feed-item-close)::after,
+[class^="shopWindow_shopWindowAd"]:not([class^="shopWindow_shopWindowAd"] [class^="shopWindow_shopWindowAd"])::after,
+.sdk-ad::after,
+#ad-top-static-banner::after,
+#ad_result_right::after,
+#opening-ad::after,
+.ad-icon-side-banner::after,
+a[dt-eid="ads_top"]::after {
     content: "广告";
     position: absolute;
     top: 50%;
