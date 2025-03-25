@@ -1,21 +1,33 @@
-.bili-video-card__wrap:has(.bili-video-card__info--ad),
-.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]),
-.ad-report {
+.ad_text,
+.mod_js_ad,
+.common_ad_item,
+.right_ad_item,
+.post_recommend_ad,
+.hp_textlink1_ad,
+.idx_kaola_ad {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-.bili-video-card__wrap:has(.bili-video-card__info--ad):hover,
-.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]):hover,
-.ad-report:hover {
+.ad_text:hover,
+.mod_js_ad:hover,
+.common_ad_item:hover,
+.right_ad_item:hover,
+.post_recommend_ad:hover,
+.hp_textlink1_ad:hover,
+.idx_kaola_ad:hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-.bili-video-card__wrap:has(.bili-video-card__info--ad)::after,
-.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"])::after,
-.ad-report::after {
+.ad_text::after,
+.mod_js_ad::after,
+.common_ad_item::after,
+.right_ad_item::after,
+.post_recommend_ad::after,
+.hp_textlink1_ad::after,
+.idx_kaola_ad::after {
     content: "广告";
     position: absolute;
     top: 50%;

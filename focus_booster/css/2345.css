@@ -1,21 +1,18 @@
-.bili-video-card__wrap:has(.bili-video-card__info--ad),
-.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]),
-.ad-report {
+.xxl-ad-360,
+div:has(> .ad-mark) {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     overflow: hidden;
 }
 
-.bili-video-card__wrap:has(.bili-video-card__info--ad):hover,
-.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]):hover,
-.ad-report:hover {
+.xxl-ad-360:hover,
+div:has(> .ad-mark):hover {
     filter: blur(0px) !important;
     overflow: visible;
 }
 
-.bili-video-card__wrap:has(.bili-video-card__info--ad)::after,
-.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"])::after,
-.ad-report::after {
+.xxl-ad-360::after,
+div:has(> .ad-mark)::after {
     content: "广告";
     position: absolute;
     top: 50%;
