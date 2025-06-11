@@ -15,6 +15,9 @@ var part2css string
 //go:embed part3.css
 var part3css string
 
+//go:embed part4.css
+var part4css string
+
 //go:embed root.css
 var rootcss string
 
@@ -231,10 +234,11 @@ func main() {
 		var part1 = GenPart(entry.Selectors, "", part1css)
 		var part2 = GenPart(entry.Selectors, ":hover", part2css)
 		var part3 = GenPart(entry.Selectors, "::after", part3css)
+		var part4 = GenPart(entry.Selectors, ":hover::after", part4css)
 		if pre != "" {
 			pre += "\n\n"
 		}
-		var result = fmt.Sprintf("%s%s\n\n%s\n\n%s\n", pre, part1, part2, part3)
+		var result = fmt.Sprintf("%s%s\n\n%s\n\n%s\n\n%s\n", pre, part1, part2, part3, part4)
 		// Part 2
 		// Part 3
 		if entry.AdditionalData != "" {

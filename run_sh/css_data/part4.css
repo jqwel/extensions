@@ -1,0 +1,3 @@
+{ /*:hover::after*/
+    animation: fadeInOut 1s ease-in-out 2; /* 应用动画 */
+}

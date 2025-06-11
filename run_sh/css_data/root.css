@@ -1,6 +1,12 @@
 :root {
     --blur-amount: 10px;
-    --filter-transition-duration: 0.01s;
+    --filter-transition-duration: 0.1s;
     --filter-transition-timing: ease-in-out;
     --content-ad-font-size: max((calc(min(7vw, 7vh, 512px)) + calc(min(10vw, 10vh) + 32px)) / 1.6, 32px);
+}
+/* 定义渐入渐出动画 */
+@keyframes fadeInOut {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
 }

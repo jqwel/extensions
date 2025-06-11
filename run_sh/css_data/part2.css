@@ -1,4 +1,5 @@
-{
+{ /*:hover*/
     filter: blur(0px) !important;
-    overflow: visible;
+    /*overflow: visible;*/
+    /*border: none;*/
 }

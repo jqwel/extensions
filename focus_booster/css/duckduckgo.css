@@ -1,15 +1,19 @@
 li[data-layout="ad"] {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
-    overflow: hidden;
+    /*overflow: hidden;*/
+    mask-image: linear-gradient(black, black);
+    mask-size: 100% 100%;
+    mask-repeat: no-repeat;
 }
 
-li[data-layout="ad"]:hover {
+li[data-layout="ad"]:hover { /*:hover*/
     filter: blur(0px) !important;
-    overflow: visible;
+    /*overflow: visible;*/
+    /*border: none;*/
 }
 
-li[data-layout="ad"]::after {
+li[data-layout="ad"]::after { /*::after*/
     content: "广告";
     position: absolute;
     top: 50%;
@@ -17,10 +21,10 @@ li[data-layout="ad"]::after {
     filter: blur(1px);
     transform: translate(-50%, -50%) rotate(-15deg);
     background: rgba(255, 255, 255, 0.12);
-    color: rgba(204, 56, 56, 0.18);
+    color: rgba(204, 56, 56, 0.39);
     display: inline-flex;
     padding: 8px 24px 16px 24px;
-    border: 5px solid rgba(204, 62, 62, 0.13);
+    border: 5px solid rgba(204, 62, 62, 0.26);
     font-size: max(64px, min(32em, 120px));
     min-height: max(64px, min(32em, 120px));
     line-height: max(64px, min(32em, 120px));
@@ -36,5 +40,9 @@ li[data-layout="ad"]::after {
     inset 0 0 0 1px rgba(255, 255, 255, 0.1),
     0 0 2px rgba(204, 62, 62, 0.1), /* Outer shadow */
     inset 0 0 5px rgba(204, 62, 62, 0.15); /* Inner shadow with 3px spread */
+    opacity: 0;
 }
 
+li[data-layout="ad"]:hover::after { /*:hover::after*/
+    animation: fadeInOut 1s ease-in-out 2; /* 应用动画 */
+}
