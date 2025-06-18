@@ -17,6 +17,10 @@
 - 支持[Tampermonkey](https://www.tampermonkey.net/)脚本, 安装URL:https://raw.githubusercontent.com/jqwel/extensions/refs/heads/main/dist/focus_booster.user.js, git文件[focus_booster.user.js](dist/focus_booster.user.js)。模版目录[tampermonkey](run_sh/tampermonkey)。
 - 支持Chrome扩展,在[focus_booster](focus_booster)文件夹开发者模式加载。
 
+## bilibili_ext
+- 换一换历史导航,安装URL: https://github.com/jqwel/extensions/raw/refs/heads/main/bilibili_ext/dist/bilibili_ext.user.js
+
+
 ## 🚀 快速开始
 
 ### 安装方法
