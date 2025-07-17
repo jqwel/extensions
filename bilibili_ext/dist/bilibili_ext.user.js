@@ -51,8 +51,8 @@
   function createButton(text, borderRadius, onClick) {
     const btn = document.createElement('button');
     btn.textContent = text;
-    btn.style.background = '#f6f7f8'; // 浅灰背景
-    btn.style.color = '#333';         // 深灰字体
+    btn.style.background = 'rgba(246,247,248,0.15)'; // 浅灰背景
+    btn.style.color = 'rgba(138,132,128,0.8)';         // 深灰字体
     btn.style.border = '1px solid #e0e0e0';
     btn.style.borderRadius = borderRadius;
     btn.style.padding = '7px 2px';
@@ -63,12 +63,12 @@
 
     // hover 效果（稍微变深，增加阴影）
     btn.addEventListener('mouseenter', () => {
-      btn.style.background = '#e0e0e0';
-      btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+      btn.style.background = 'rgba(224,224,224,0.15)';
+      btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
       btn.style.transform = 'scale(1.02)';
     });
     btn.addEventListener('mouseleave', () => {
-      btn.style.background = '#f6f7f8';
+      btn.style.background = 'rgba(246,247,248,0.15)';
       btn.style.boxShadow = 'none';
       btn.style.transform = 'scale(1)';
     });
