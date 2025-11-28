@@ -73,6 +73,7 @@ func main() {
 			Filename: "bilibili.css",
 			Selectors: []string{
 				".bili-video-card__wrap:has(.bili-video-card__info--ad)",
+				".bili-video-card__wrap:has(.ad-feedback-entry)",
 				`.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"])`,
 				`.ad-report`,
 			},

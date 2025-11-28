@@ -1,4 +1,5 @@
 .bili-video-card__wrap:has(.bili-video-card__info--ad),
+.bili-video-card__wrap:has(.ad-feedback-entry),
 .bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]),
 .ad-report {
     filter: blur(var(--blur-amount)) !important;
@@ -10,6 +11,7 @@
 }
 
 .bili-video-card__wrap:has(.bili-video-card__info--ad):hover,
+.bili-video-card__wrap:has(.ad-feedback-entry):hover,
 .bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]):hover,
 .ad-report:hover { /*:hover*/
     filter: blur(0px) !important;
@@ -18,6 +20,7 @@
 }
 
 .bili-video-card__wrap:has(.bili-video-card__info--ad)::after,
+.bili-video-card__wrap:has(.ad-feedback-entry)::after,
 .bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"])::after,
 .ad-report::after { /*::after*/
     content: "广告";
@@ -50,6 +53,7 @@
 }
 
 .bili-video-card__wrap:has(.bili-video-card__info--ad):hover::after,
+.bili-video-card__wrap:has(.ad-feedback-entry):hover::after,
 .bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]):hover::after,
 .ad-report:hover::after { /*:hover::after*/
     animation: fadeInOut 1s ease-in-out 2; /* 应用动画 */

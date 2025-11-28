@@ -4,7 +4,7 @@
 // @version      1.0
 // @description  在B站主页的"换一换"旁添加前进/后退按钮，支持回溯推荐内容
 // @author       YourName
-// @match        https://www.bilibili.com/
+// @match        https://www.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico
 // @grant        GM_setValue
 // @grant        GM_getValue
