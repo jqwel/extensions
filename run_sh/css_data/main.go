@@ -138,9 +138,6 @@ func main() {
 				`li:has(.c)`,
 				`.good_ths li`,
 			},
-			AdditionalData: `body {
-    background-color: black !important;
-}`,
 		},
 		{
 			Filename: "netease.css",

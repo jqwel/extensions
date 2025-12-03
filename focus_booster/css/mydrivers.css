@@ -50,7 +50,3 @@ li:has(.c):hover::after,
 .good_ths li:hover::after { /*:hover::after*/
     animation: fadeInOut 1s ease-in-out 2; /* 应用动画 */
 }
-
-body {
-    background-color: black !important;
-}
