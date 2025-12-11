@@ -44,7 +44,7 @@
 
     btn.textContent = text;
     btn.style.borderRadius = borderRadius;
-    btn.style.padding = '6px 10px';
+    btn.style.padding = '6px 8px';
     btn.style.cursor = 'pointer';
     btn.style.transition = 'all 0.15s ease';
     btn.style.fontWeight = '500';
@@ -364,4 +364,91 @@
   setupMessageListener();
   bindHistoryToPageContext();
   waitForRefreshBtn();
+})();
+(function () {
+  'use strict';
+
+  // 不顺眼的参数都丢这里
+  const JUNK_PARAMS = new Set([
+    'spm_id_from',
+    'vd_source',
+    'trackid',
+    'track_id',
+    'query_from',
+    'search_id',
+    'search_query',
+    'csource',
+    'share_source',
+    'caid',
+    'request_id',
+    'resource_id',
+    'source_id',
+    'from_spmid',
+    'creative_id',
+    'linked_creative_id',
+  ]);
+
+  function cleanCurrentUrl(tag) {
+    try {
+      const url = new URL(location.href);
+      let changed = false;
+
+      for (const key of Array.from(url.searchParams.keys())) {
+        if (JUNK_PARAMS.has(key)) {
+          url.searchParams.delete(key);
+          changed = true;
+        }
+      }
+
+      if (!changed) return;
+
+      let finalUrl = url.toString().replace(/\?$/, '');
+      console.log('[bili-url-cleaner]', tag, '=>', finalUrl);
+
+      history.replaceState(history.state, '', finalUrl);
+    } catch (e) {
+      console.log('[bili-url-cleaner] clean error', e);
+    }
+  }
+
+  function wrapHistoryMethod(name) {
+    const raw = history[name];
+    if (!raw) return;
+
+    history[name] = function (state, title, url) {
+      if (typeof url === 'string') {
+        try {
+          const u = new URL(url, location.origin);
+          let changed = false;
+
+          for (const key of Array.from(u.searchParams.keys())) {
+            if (JUNK_PARAMS.has(key)) {
+              u.searchParams.delete(key);
+              changed = true;
+            }
+          }
+          if (changed) {
+            url = u.toString().replace(/\?$/, '');
+          }
+        } catch (e) {}
+      }
+
+      const ret = raw.apply(this, [state, title, url]);
+      // 再对当前地址兜一层底，防止某些奇怪用法漏网
+      cleanCurrentUrl('after ' + name);
+      return ret;
+    };
+  }
+
+  // 1) 刚进入页面就清一次（包括 vd_source）
+  cleanCurrentUrl('initial');
+
+  // 2) hook pushState / replaceState，SPA 路由也顺带洗掉
+  wrapHistoryMethod('pushState');
+  wrapHistoryMethod('replaceState');
+
+  // 3) 再加一个周期性兜底（有些站会直接改 location.href）
+  setInterval(() => {
+    cleanCurrentUrl('interval');
+  }, 1500);
 })();
