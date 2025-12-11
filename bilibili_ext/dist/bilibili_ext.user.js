@@ -1,137 +1,367 @@
 // ==UserScript==
-// @name         B站换一换历史导航
+// @name         B站首页推荐回溯 (API 历史回放)
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  在B站主页的"换一换"旁添加前进/后退按钮，支持回溯推荐内容
-// @author       YourName
+// @version      1.6
+// @description  记录首页 top/feed/rcmd 接口历史, 左右键回放, 点击换一换自动回到实时模式
 // @match        https://www.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico
-// @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_setValue
 // ==/UserScript==
 
-(function() {
+(function () {
   'use strict';
-  const STORAGE_KEY = 'bili_refresh_history';
-  const MAX_HISTORY = 50; // 最大历史记录条数
-  var mode = 1;
 
-  // 初始化历史记录
-  let history = [];// JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  let currentIndex = history.length - 1; // 指向最新记录
+  const STORAGE_KEY = 'bili_rcmd_json_history';
+  const MAX_HISTORY = 9;
+  const RCMD_PATH = '/x/web-interface/wbi/index/top/feed/rcmd';
 
-  // 等待页面加载完成
-  addButtons()
+  let history = GM_getValue(STORAGE_KEY, []);
+  if (!Array.isArray(history)) history = [];
 
-  function addButtons() {
-    const refreshBtn = document.querySelector('.roll-btn');
-    if (!refreshBtn) return setTimeout(addButtons, 250);
+  let mode = 'live';              // 'live' 或 'replay'
+  let historyIndex = history.length ? history.length - 1 : -1;
 
-    // 创建按钮容器
-    const container = document.createElement('div');
-    container.style.display = 'flex';
-    container.style.gap = '0px';
-    container.style.marginTop = '8px';
-    container.style.marginLeft = '1px';
+  let bar;                        // 我们的控件栏
+  let refreshBtn;                 // B站“换一换”按钮
+  let internalTrigger = false;    // 区分脚本自身触发的点击
 
-    // 后退按钮
-    const backBtn = createButton('◀', '6px 0px 0px 6px',() => navigate(-1));
-    // 前进按钮
-    const forwardBtn = createButton('▶', '0px 6px 6px 0px', () => navigate(1));
+  /* ========== 工具函数 ========== */
 
-    container.appendChild(backBtn);
-    container.appendChild(forwardBtn);
-
-    // 插入到换一换按钮旁
-    refreshBtn.parentNode.insertBefore(container, refreshBtn.nextSibling);
-    // 监听换一换点击事件
-    refreshBtn.addEventListener('click', () => saveCurrentState());
+  function isDarkMode() {
+    try {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return true;
+      }
+    } catch (e) {}
+    const bg = getComputedStyle(document.body).backgroundColor || '';
+    return bg.includes('0, 0, 0') || bg.includes('24, 24, 24');
   }
 
-  function createButton(text, borderRadius, onClick) {
+  function createNavButton(text, borderRadius) {
     const btn = document.createElement('button');
+    const dark = isDarkMode();
+
     btn.textContent = text;
-    btn.style.background = 'rgba(246,247,248,0.15)'; // 浅灰背景
-    btn.style.color = 'rgba(138,132,128,0.8)';         // 深灰字体
-    btn.style.border = '1px solid #e0e0e0';
     btn.style.borderRadius = borderRadius;
-    btn.style.padding = '7px 2px';
+    btn.style.padding = '6px 10px';
     btn.style.cursor = 'pointer';
-    btn.style.transition = 'all 0.2s ease';
+    btn.style.transition = 'all 0.15s ease';
     btn.style.fontWeight = '500';
     btn.style.userSelect = 'none';
+    btn.style.fontSize = '12px';
+    btn.style.outline = 'none';
+    btn.style.boxShadow = 'none';
+    btn.style.border = 'none';
+    btn.style.backgroundClip = 'padding-box';
 
-    // hover 效果（稍微变深，增加阴影）
+    if (dark) {
+      btn.style.background = 'rgba(40,40,40,0.7)';
+      btn.style.color = 'rgba(240,240,240,0.9)';
+    } else {
+      // 浅色模式：主色尽量轻，靠外层 group 线框
+      btn.style.background = 'transparent';
+      btn.style.color = 'rgba(90,90,90,0.9)';
+    }
+
     btn.addEventListener('mouseenter', () => {
-      btn.style.background = 'rgba(224,224,224,0.15)';
-      btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
+      if (dark) {
+        btn.style.background = 'rgba(55,55,55,0.9)';
+        btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.6)';
+      } else {
+        btn.style.background = 'rgba(0,0,0,0.04)';
+        btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
+      }
       btn.style.transform = 'scale(1.02)';
     });
+
     btn.addEventListener('mouseleave', () => {
-      btn.style.background = 'rgba(246,247,248,0.15)';
+      if (dark) {
+        btn.style.background = 'rgba(40,40,40,0.7)';
+      } else {
+        btn.style.background = 'transparent';
+      }
       btn.style.boxShadow = 'none';
       btn.style.transform = 'scale(1)';
     });
 
-    // click 效果（轻微缩小）
     btn.addEventListener('mousedown', () => {
       btn.style.transform = 'scale(0.96)';
     });
+
     btn.addEventListener('mouseup', () => {
       btn.style.transform = 'scale(1.02)';
     });
 
-    btn.addEventListener('click', onClick);
     return btn;
   }
 
-  function saveCurrentState() {
-    if (mode === 2) {
-      location.reload();
-      return
-      history = []
-      currentIndex = history.length - 1;
-      //navigate(1);
-      mode = 1;
-    }
-    // 获取当前推荐列表的HTML快照
-    //const content = document.querySelector(".is-version8")?.innerHTML || '';
-    const container = document.querySelector(".is-version8");
-    if (!container) {
-      console.error("container empty");
-      return
-    }
-    const content = container.cloneNode(true)
-    history.push(content);
-    if (history.length > MAX_HISTORY) history.shift(); // 清理旧记录
-    currentIndex = history.length - 1;
-    // localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+  function updateBtnDisabled(btn, disabled) {
+    btn.disabled = disabled;
+    btn.style.opacity = disabled ? '0.35' : '1';
+    btn.style.cursor = disabled ? 'default' : 'pointer';
   }
 
-  function navigate(direction) {
-    if (!history.length) return;
-    if (mode === 1) {
-      saveCurrentState();
-      mode = 2;
-    }
-    let newIndex = currentIndex + direction;
-    if (newIndex < 0) {
-      newIndex = 0
-    }
-    if (newIndex >= history.length) {
-      newIndex = history.length - 1
-    }
-    if (newIndex < 0 || newIndex >= history.length) return; // 边界检查
+  /* ========== 历史管理 ========== */
 
-    currentIndex = newIndex;
-    const content = history[currentIndex];
-
-    const container = document.querySelector(".is-version8");
-    if (!container) {
-      console.log("no container");
-    }
-    const parent = container.parentNode;
-    const newNode = content; //.cloneNode(true);
-    parent.replaceChild(newNode, container);
+  function persistHistory() {
+    GM_setValue(STORAGE_KEY, history);
+    bindHistoryToPageContext();
+    updateBarUI();
   }
+
+  function saveHistory(json) {
+    history.push(json);
+    while (history.length > MAX_HISTORY) {history.shift();}
+    historyIndex = history.length - 1;
+    persistHistory();
+    console.log('[rcmd-history] saved batch, length =', history.length);
+  }
+
+  /* ========== 与页面通信：注入 fetch hook ========== */
+
+  function injectHook() {
+    const hookCode = `
+      (function() {
+        const RCMD_PATH = ${JSON.stringify(RCMD_PATH)};
+        const ORIGIN_FETCH = window.fetch;
+
+        window.__RCMD_HISTORY_CTRL__ = window.__RCMD_HISTORY_CTRL__ || {
+          mode: 'live',
+          index: -1,
+          dataMap: {}
+        };
+
+        window.fetch = function(input, init) {
+          const url = typeof input === 'string' ? input : input && input.url;
+          if (url && url.includes(RCMD_PATH)) {
+            const ctrl = window.__RCMD_HISTORY_CTRL__;
+
+            // 回放模式：直接返回历史 JSON
+            if (ctrl.mode === 'replay' && ctrl.index in ctrl.dataMap) {
+              const json = ctrl.dataMap[ctrl.index];
+              console.log('[rcmd-history] replay index', ctrl.index, json);
+              const body = JSON.stringify(json);
+              return Promise.resolve(new Response(body, {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              }));
+            }
+
+            // 实时模式：正常 fetch + 回传给油猴
+            return ORIGIN_FETCH(input, init).then(res => {
+              try {
+                const cloned = res.clone();
+                cloned.json().then(json => {
+                  window.postMessage({
+                    type: 'RCMD_HISTORY_SNAPSHOT',
+                    payload: json
+                  }, '*');
+                });
+              } catch (e) {}
+              return res;
+            });
+          }
+          return ORIGIN_FETCH(input, init);
+        };
+      })();
+    `;
+    const s = document.createElement('script');
+    s.textContent = hookCode;
+    document.documentElement.appendChild(s);
+    s.remove();
+  }
+
+  function setupMessageListener() {
+    window.addEventListener('message', ev => {
+      if (!ev.data || ev.data.type !== 'RCMD_HISTORY_SNAPSHOT') return;
+      const json = ev.data.payload;
+      if (!json) return;
+      if (mode !== 'live') return;   // 回放模式下不记录
+      saveHistory(json);
+    });
+  }
+
+  function bindHistoryToPageContext() {
+    const dataMap = history.reduce((acc, item, idx) => {
+      acc[idx] = item;
+      return acc;
+    }, {});
+    const script = document.createElement('script');
+    script.textContent = `
+      window.__RCMD_HISTORY_CTRL__ = window.__RCMD_HISTORY_CTRL__ || {};
+      Object.assign(window.__RCMD_HISTORY_CTRL__, {
+        dataMap: ${JSON.stringify(dataMap)},
+        index: ${historyIndex},
+        mode: ${JSON.stringify(mode)}
+      });
+    `;
+    document.documentElement.appendChild(script);
+    script.remove();
+  }
+
+  function setMode(newMode) {
+    mode = newMode;
+    bindHistoryToPageContext();
+    updateBarUI();
+    console.log('[rcmd-history] mode =>', mode);
+  }
+
+  function setIndex(newIndex) {
+    if (newIndex < 0 || newIndex >= history.length) return;
+    historyIndex = newIndex;
+    bindHistoryToPageContext();
+    updateBarUI();
+    console.log('[rcmd-history] index =>', historyIndex);
+  }
+
+  function triggerReplayRefresh() {
+    if (!refreshBtn) return;
+    internalTrigger = true;
+    refreshBtn.click();
+  }
+
+  /* ========== UI：按钮栏 & 信息 ========== */
+
+  function updateBarUI() {
+    if (!bar) return;
+
+    const info = bar.querySelector('.my-rcmd-info');
+    const prevBtn = bar.querySelector('.my-rcmd-prev');
+    const nextBtn = bar.querySelector('.my-rcmd-next');
+
+    const dark = isDarkMode();
+
+    updateBtnDisabled(prevBtn, history.length === 0 || historyIndex <= 0);
+    updateBtnDisabled(nextBtn, history.length === 0 || historyIndex >= history.length - 1);
+
+    info.style.writingMode = 'horizontal-tb';
+    info.style.textOrientation = 'mixed';
+    info.style.display = 'inline-flex';
+    info.style.alignItems = 'center';
+    info.style.justifyContent = 'center';
+    info.style.whiteSpace = 'nowrap';
+    info.style.gap = '4px';
+    info.style.fontSize = '12px';
+    info.style.opacity = '0.85';
+    info.style.color = dark ? '#d0d0d0' : '#666666';
+
+    info.innerHTML = '';
+
+    if (!history.length) {
+      info.textContent = '';
+      return;
+    }
+
+    const label = document.createElement('span');
+    label.textContent = '';
+
+    const nums = document.createElement('span');
+    nums.textContent = `${historyIndex + 1} / ${history.length}`;
+
+    info.appendChild(label);
+    info.appendChild(nums);
+  }
+
+  function addBarNearRefresh() {
+    // 如果 B站改了“换一换”的 class，这里改 '.roll-btn'
+    refreshBtn = document.querySelector('.roll-btn');
+    if (!refreshBtn || bar) return;
+
+    const dark = isDarkMode();
+
+    bar = document.createElement('div');
+    bar.className = 'my-rcmd-bar';
+    bar.style.display = 'flex';
+    bar.style.flexDirection = 'column';
+    bar.style.alignItems = 'center';
+    bar.style.gap = '4px';
+    bar.style.marginTop = '8px';
+    bar.style.userSelect = 'none';
+    bar.style.writingMode = 'horizontal-tb';
+    bar.style.textOrientation = 'mixed';
+
+    // 胶囊按钮组
+    const btnGroup = document.createElement('div');
+    btnGroup.style.display = 'inline-flex';
+    btnGroup.style.gap = '0';
+    btnGroup.style.borderRadius = '18px';
+    btnGroup.style.overflow = 'hidden';
+    btnGroup.style.border = dark
+        ? '1px solid rgba(255,255,255,0.25)'
+        : '1px solid rgba(0,0,0,0.14)';
+    btnGroup.style.background = dark
+        ? 'rgba(20,20,20,0.9)'
+        : 'rgba(255,255,255,0.98)';
+    btnGroup.style.boxShadow = dark
+        ? '0 1px 4px rgba(0,0,0,0.7)'
+        : '0 1px 4px rgba(0,0,0,0.16)';
+
+    const prevBtn = createNavButton('◀', '18px 0 0 18px');
+    prevBtn.className = 'my-rcmd-prev';
+
+    const nextBtn = createNavButton('▶', '0 18px 18px 0');
+    nextBtn.className = 'my-rcmd-next';
+
+    btnGroup.appendChild(prevBtn);
+    btnGroup.appendChild(nextBtn);
+
+    const info = document.createElement('span');
+    info.className = 'my-rcmd-info';
+
+    bar.appendChild(btnGroup);
+    bar.appendChild(info);
+
+    // 插在“换一换”按钮后面
+    refreshBtn.parentNode.insertBefore(bar, refreshBtn.nextSibling);
+
+    // 左右按钮行为
+    prevBtn.addEventListener('click', () => {
+      if (historyIndex > 0) {
+        setMode('replay');
+        setIndex(historyIndex - 1);
+        triggerReplayRefresh();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (historyIndex < history.length - 1) {
+        setMode('replay');
+        setIndex(historyIndex + 1);
+        triggerReplayRefresh();
+      }
+    });
+
+    // 用户手动点“换一换” => 回到实时模式
+    refreshBtn.addEventListener(
+        'click',
+        () => {
+          if (internalTrigger) {
+            internalTrigger = false;
+            return;
+          }
+          setMode('live');
+        },
+        true
+    );
+
+    updateBarUI();
+  }
+
+  function waitForRefreshBtn() {
+    const timer = setInterval(() => {
+      const el = document.querySelector('.roll-btn');
+      if (el) {
+        clearInterval(timer);
+        addBarNearRefresh();
+      }
+    }, 500);
+  }
+
+  /* ========== 启动 ========== */
+
+  injectHook();
+  setupMessageListener();
+  bindHistoryToPageContext();
+  waitForRefreshBtn();
 })();
