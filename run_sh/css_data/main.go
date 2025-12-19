@@ -250,11 +250,12 @@ func main() {
 			return
 		}
 	}
+	fmt.Println("写入完成")
 }
 
 func GenPart(selectors []string, decorator string, content string) string {
 	var result string
-	if selectors == nil || len(selectors) == 0 {
+	if len(selectors) == 0 {
 		return result
 	}
 	for i, selector := range selectors {
