@@ -82,3 +82,5 @@ img[src*="//baikebcs.bdimg.com/adpic/"]:hover::after,
 .newfcImgli:has(.fc-ad-tip):hover::after { /*:hover::after*/
     animation: fadeInOut 1s ease-in-out 2; /* 应用动画 */
 }
+
+div#mainElem[class^="index-module__main--"]{background: black;}

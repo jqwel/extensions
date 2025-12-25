@@ -68,6 +68,7 @@ func main() {
 				`img[src*="//baikebcs.bdimg.com/adpic/"]`,
 				`.newfcImgli:has(.fc-ad-tip)`, // image.baidu.com
 			},
+			AdditionalData: `div#mainElem[class^="index-module__main--"]{background: black;}`,
 		},
 		{
 			Filename: "bilibili.css",
