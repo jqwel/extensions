@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         B站首页推荐回溯 (API 历史回放)
+// @name         B站首页推荐回溯 (API 历史回放) - 性能优化版
 // @namespace    http://tampermonkey.net/
-// @version      1.6
+// @version      1.6.1
 // @description  记录首页 top/feed/rcmd 接口历史, 左右键回放, 点击换一换自动回到实时模式
 // @match        https://www.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico
@@ -26,14 +26,14 @@
   let refreshBtn;                 // B站“换一换”按钮
   let internalTrigger = false;    // 区分脚本自身触发的点击
 
+  // [优化] 缓存 matchMedia 实例，避免高频触发重建
+  const darkModeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
   /* ========== 工具函数 ========== */
 
   function isDarkMode() {
-    try {
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return true;
-      }
-    } catch (e) {}
+    if (darkModeQuery) return darkModeQuery.matches;
+    // [优化] 尽量减少 getComputedStyle 的调用
     const bg = getComputedStyle(document.body).backgroundColor || '';
     return bg.includes('0, 0, 0') || bg.includes('24, 24, 24');
   }
@@ -43,29 +43,31 @@
     const dark = isDarkMode();
 
     btn.textContent = text;
-    btn.style.borderRadius = borderRadius;
-    btn.style.padding = '6px 8px';
-    btn.style.cursor = 'pointer';
-    btn.style.transition = 'all 0.15s ease';
-    btn.style.fontWeight = '500';
-    btn.style.userSelect = 'none';
-    btn.style.fontSize = '12px';
-    btn.style.outline = 'none';
-    btn.style.boxShadow = 'none';
-    btn.style.border = 'none';
-    btn.style.backgroundClip = 'padding-box';
+    // [优化] 将不会变动的样式直接设置好
+    Object.assign(btn.style, {
+      borderRadius: borderRadius,
+      padding: '6px 8px',
+      cursor: 'pointer',
+      transition: 'all 0.15s ease',
+      fontWeight: '500',
+      userSelect: 'none',
+      fontSize: '12px',
+      outline: 'none',
+      boxShadow: 'none',
+      border: 'none',
+      backgroundClip: 'padding-box'
+    });
 
     if (dark) {
       btn.style.background = 'rgba(40,40,40,0.7)';
       btn.style.color = 'rgba(240,240,240,0.9)';
     } else {
-      // 浅色模式：主色尽量轻，靠外层 group 线框
       btn.style.background = 'transparent';
       btn.style.color = 'rgba(90,90,90,0.9)';
     }
 
     btn.addEventListener('mouseenter', () => {
-      if (dark) {
+      if (isDarkMode()) {
         btn.style.background = 'rgba(55,55,55,0.9)';
         btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.6)';
       } else {
@@ -76,11 +78,7 @@
     });
 
     btn.addEventListener('mouseleave', () => {
-      if (dark) {
-        btn.style.background = 'rgba(40,40,40,0.7)';
-      } else {
-        btn.style.background = 'transparent';
-      }
+      btn.style.background = isDarkMode() ? 'rgba(40,40,40,0.7)' : 'transparent';
       btn.style.boxShadow = 'none';
       btn.style.transform = 'scale(1)';
     });
@@ -97,6 +95,7 @@
   }
 
   function updateBtnDisabled(btn, disabled) {
+    if (btn.disabled === disabled) return; // [优化] 避免无意义的 DOM 更新
     btn.disabled = disabled;
     btn.style.opacity = disabled ? '0.35' : '1';
     btn.style.cursor = disabled ? 'default' : 'pointer';
@@ -115,7 +114,6 @@
     while (history.length > MAX_HISTORY) {history.shift();}
     historyIndex = history.length - 1;
     persistHistory();
-    console.log('[rcmd-history] saved batch, length =', history.length);
   }
 
   /* ========== 与页面通信：注入 fetch hook ========== */
@@ -137,18 +135,14 @@
           if (url && url.includes(RCMD_PATH)) {
             const ctrl = window.__RCMD_HISTORY_CTRL__;
 
-            // 回放模式：直接返回历史 JSON
             if (ctrl.mode === 'replay' && ctrl.index in ctrl.dataMap) {
               const json = ctrl.dataMap[ctrl.index];
-              console.log('[rcmd-history] replay index', ctrl.index, json);
-              const body = JSON.stringify(json);
-              return Promise.resolve(new Response(body, {
+              return Promise.resolve(new Response(JSON.stringify(json), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' }
               }));
             }
 
-            // 实时模式：正常 fetch + 回传给油猴
             return ORIGIN_FETCH(input, init).then(res => {
               try {
                 const cloned = res.clone();
@@ -176,8 +170,7 @@
     window.addEventListener('message', ev => {
       if (!ev.data || ev.data.type !== 'RCMD_HISTORY_SNAPSHOT') return;
       const json = ev.data.payload;
-      if (!json) return;
-      if (mode !== 'live') return;   // 回放模式下不记录
+      if (!json || mode !== 'live') return;
       saveHistory(json);
     });
   }
@@ -201,10 +194,10 @@
   }
 
   function setMode(newMode) {
+    if (mode === newMode) return;
     mode = newMode;
     bindHistoryToPageContext();
     updateBarUI();
-    console.log('[rcmd-history] mode =>', mode);
   }
 
   function setIndex(newIndex) {
@@ -212,7 +205,6 @@
     historyIndex = newIndex;
     bindHistoryToPageContext();
     updateBarUI();
-    console.log('[rcmd-history] index =>', historyIndex);
   }
 
   function triggerReplayRefresh() {
@@ -230,41 +222,20 @@
     const prevBtn = bar.querySelector('.my-rcmd-prev');
     const nextBtn = bar.querySelector('.my-rcmd-next');
 
-    const dark = isDarkMode();
-
     updateBtnDisabled(prevBtn, history.length === 0 || historyIndex <= 0);
     updateBtnDisabled(nextBtn, history.length === 0 || historyIndex >= history.length - 1);
 
-    info.style.writingMode = 'horizontal-tb';
-    info.style.textOrientation = 'mixed';
-    info.style.display = 'inline-flex';
-    info.style.alignItems = 'center';
-    info.style.justifyContent = 'center';
-    info.style.whiteSpace = 'nowrap';
-    info.style.gap = '4px';
-    info.style.fontSize = '12px';
-    info.style.opacity = '0.85';
-    info.style.color = dark ? '#d0d0d0' : '#666666';
-
-    info.innerHTML = '';
+    // [优化] 移除了高频赋值的静态样式，且避免频繁重写 innerHTML，改用 textContent
+    info.style.color = isDarkMode() ? '#d0d0d0' : '#666666';
 
     if (!history.length) {
       info.textContent = '';
-      return;
+    } else {
+      info.textContent = `${historyIndex + 1} / ${history.length}`;
     }
-
-    const label = document.createElement('span');
-    label.textContent = '';
-
-    const nums = document.createElement('span');
-    nums.textContent = `${historyIndex + 1} / ${history.length}`;
-
-    info.appendChild(label);
-    info.appendChild(nums);
   }
 
   function addBarNearRefresh() {
-    // 如果 B站改了“换一换”的 class，这里改 '.roll-btn'
     refreshBtn = document.querySelector('.roll-btn');
     if (!refreshBtn || bar) return;
 
@@ -272,30 +243,28 @@
 
     bar = document.createElement('div');
     bar.className = 'my-rcmd-bar';
-    bar.style.display = 'flex';
-    bar.style.flexDirection = 'column';
-    bar.style.alignItems = 'center';
-    bar.style.gap = '4px';
-    bar.style.marginTop = '8px';
-    bar.style.userSelect = 'none';
-    bar.style.writingMode = 'horizontal-tb';
-    bar.style.textOrientation = 'mixed';
+    // [优化] 所有不会变动的静态样式都在此处一次性赋好
+    Object.assign(bar.style, {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '4px',
+      marginTop: '8px',
+      userSelect: 'none',
+      writingMode: 'horizontal-tb',
+      textOrientation: 'mixed'
+    });
 
-    // 胶囊按钮组
     const btnGroup = document.createElement('div');
-    btnGroup.style.display = 'inline-flex';
-    btnGroup.style.gap = '0';
-    btnGroup.style.borderRadius = '18px';
-    btnGroup.style.overflow = 'hidden';
-    btnGroup.style.border = dark
-        ? '1px solid rgba(255,255,255,0.25)'
-        : '1px solid rgba(0,0,0,0.14)';
-    btnGroup.style.background = dark
-        ? 'rgba(20,20,20,0.9)'
-        : 'rgba(255,255,255,0.98)';
-    btnGroup.style.boxShadow = dark
-        ? '0 1px 4px rgba(0,0,0,0.7)'
-        : '0 1px 4px rgba(0,0,0,0.16)';
+    Object.assign(btnGroup.style, {
+      display: 'inline-flex',
+      gap: '0',
+      borderRadius: '18px',
+      overflow: 'hidden',
+      border: dark ? '1px solid rgba(255,255,255,0.25)' : '1px solid rgba(0,0,0,0.14)',
+      background: dark ? 'rgba(20,20,20,0.9)' : 'rgba(255,255,255,0.98)',
+      boxShadow: dark ? '0 1px 4px rgba(0,0,0,0.7)' : '0 1px 4px rgba(0,0,0,0.16)'
+    });
 
     const prevBtn = createNavButton('◀', '18px 0 0 18px');
     prevBtn.className = 'my-rcmd-prev';
@@ -308,14 +277,21 @@
 
     const info = document.createElement('span');
     info.className = 'my-rcmd-info';
+    Object.assign(info.style, {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      whiteSpace: 'nowrap',
+      gap: '4px',
+      fontSize: '12px',
+      opacity: '0.85'
+    });
 
     bar.appendChild(btnGroup);
     bar.appendChild(info);
 
-    // 插在“换一换”按钮后面
     refreshBtn.parentNode.insertBefore(bar, refreshBtn.nextSibling);
 
-    // 左右按钮行为
     prevBtn.addEventListener('click', () => {
       if (historyIndex > 0) {
         setMode('replay');
@@ -332,28 +308,30 @@
       }
     });
 
-    // 用户手动点“换一换” => 回到实时模式
-    refreshBtn.addEventListener(
-        'click',
-        () => {
-          if (internalTrigger) {
-            internalTrigger = false;
-            return;
-          }
-          setMode('live');
-        },
-        true
-    );
+    refreshBtn.addEventListener('click', () => {
+      if (internalTrigger) {
+        internalTrigger = false;
+        return;
+      }
+      setMode('live');
+    }, true);
 
     updateBarUI();
   }
 
   function waitForRefreshBtn() {
+    // [优化] 如果不是首页则停止轮询，防止在视频播放页等无关页面死循环吃性能
+    if (location.pathname !== '/' && location.pathname !== '/index.html') return;
+
+    let attempts = 0;
     const timer = setInterval(() => {
-      const el = document.querySelector('.roll-btn');
-      if (el) {
+      attempts++;
+      if (document.querySelector('.roll-btn')) {
         clearInterval(timer);
         addBarNearRefresh();
+      } else if (attempts > 60) {
+        // [优化] 超过 30 秒如果还没找到元素也停止定时器
+        clearInterval(timer);
       }
     }, 500);
   }
@@ -365,47 +343,41 @@
   bindHistoryToPageContext();
   waitForRefreshBtn();
 })();
+
+
 (function () {
   'use strict';
 
-  // 不顺眼的参数都丢这里
   const JUNK_PARAMS = new Set([
-    'spm_id_from',
-    'vd_source',
-    'trackid',
-    'track_id',
-    'query_from',
-    'search_id',
-    'search_query',
-    'csource',
-    'share_source',
-    'caid',
-    'request_id',
-    'resource_id',
-    'source_id',
-    'from_spmid',
-    'creative_id',
+    'spm_id_from', 'vd_source', 'trackid', 'track_id', 'query_from',
+    'search_id', 'search_query', 'csource', 'share_source', 'caid',
+    'request_id', 'resource_id', 'source_id', 'from_spmid', 'creative_id',
     'linked_creative_id',
   ]);
 
-  function cleanCurrentUrl(tag) {
+  function cleanCurrentUrl() {
     try {
+      if (!location.search) return; // [优化] 没有参数直接跳过，降低开销
       const url = new URL(location.href);
       let changed = false;
 
-      for (const key of Array.from(url.searchParams.keys())) {
+      // [优化] 直接遍历 keys 迭代器，避免使用 Array.from 产生中间垃圾数组
+      const keysToDelete = [];
+      for (const key of url.searchParams.keys()) {
         if (JUNK_PARAMS.has(key)) {
-          url.searchParams.delete(key);
-          changed = true;
+          keysToDelete.push(key);
         }
       }
 
-      if (!changed) return;
+      if (keysToDelete.length > 0) {
+        keysToDelete.forEach(k => url.searchParams.delete(k));
+        changed = true;
+      }
 
-      let finalUrl = url.toString().replace(/\?$/, '');
-      console.log('[bili-url-cleaner]', tag, '=>', finalUrl);
-
-      history.replaceState(history.state, '', finalUrl);
+      if (changed) {
+        const finalUrl = url.toString().replace(/\?$/, '');
+        history.replaceState(history.state, '', finalUrl);
+      }
     } catch (e) {
       console.log('[bili-url-cleaner] clean error', e);
     }
@@ -416,39 +388,56 @@
     if (!raw) return;
 
     history[name] = function (state, title, url) {
-      if (typeof url === 'string') {
+      if (typeof url === 'string' && url.includes('?')) {
         try {
-          const u = new URL(url, location.origin);
-          let changed = false;
-
-          for (const key of Array.from(u.searchParams.keys())) {
-            if (JUNK_PARAMS.has(key)) {
-              u.searchParams.delete(key);
-              changed = true;
+          // [优化] 在进行昂贵的 URL 解析前，使用低成本字符串预判断
+          let mightHaveJunk = false;
+          for (const param of JUNK_PARAMS) {
+            if (url.includes(param + '=')) {
+              mightHaveJunk = true;
+              break;
             }
           }
-          if (changed) {
-            url = u.toString().replace(/\?$/, '');
+
+          if (mightHaveJunk) {
+            const u = new URL(url, location.origin);
+            let changed = false;
+            const keysToDelete = [];
+
+            for (const key of u.searchParams.keys()) {
+              if (JUNK_PARAMS.has(key)) {
+                keysToDelete.push(key);
+              }
+            }
+            if (keysToDelete.length > 0) {
+              keysToDelete.forEach(k => u.searchParams.delete(k));
+              changed = true;
+            }
+            if (changed) {
+              url = u.toString().replace(/\?$/, '');
+            }
           }
         } catch (e) {}
       }
 
       const ret = raw.apply(this, [state, title, url]);
-      // 再对当前地址兜一层底，防止某些奇怪用法漏网
-      cleanCurrentUrl('after ' + name);
+      cleanCurrentUrl();
       return ret;
     };
   }
 
-  // 1) 刚进入页面就清一次（包括 vd_source）
-  cleanCurrentUrl('initial');
-
-  // 2) hook pushState / replaceState，SPA 路由也顺带洗掉
+  cleanCurrentUrl();
   wrapHistoryMethod('pushState');
   wrapHistoryMethod('replaceState');
 
-  // 3) 再加一个周期性兜底（有些站会直接改 location.href）
   setInterval(() => {
-    cleanCurrentUrl('interval');
+    // [优化] 1.5秒一次的定时器，仅当 URL 可能存在垃圾参数时才触发解析逻辑
+    if (!location.search) return;
+    for (const param of JUNK_PARAMS) {
+      if (location.search.includes(param + '=')) {
+        cleanCurrentUrl();
+        break;
+      }
+    }
   }, 1500);
 })();
