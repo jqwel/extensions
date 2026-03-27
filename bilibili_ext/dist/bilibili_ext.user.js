@@ -1,182 +1,118 @@
 // ==UserScript==
-// @name         B站首页推荐回溯 (API 历史回放) - 性能优化版
+// @name         B站首页推荐回溯 (API 历史回放) - 极致强化版
 // @namespace    http://tampermonkey.net/
-// @version      1.6.1
-// @description  记录首页 top/feed/rcmd 接口历史, 左右键回放, 点击换一换自动回到实时模式
+// @version      2.0
+// @description  Proxy无痕劫持、MutationObserver零轮询、A标签预净化源头阻断追踪、支持左右键回放
 // @match        https://www.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @run-at       document-start
 // ==/UserScript==
 
 (function () {
   'use strict';
 
+  // ========== 配置与全局变量 ==========
   const STORAGE_KEY = 'bili_rcmd_json_history';
   const MAX_HISTORY = 9;
   const RCMD_PATH = '/x/web-interface/wbi/index/top/feed/rcmd';
 
-  let history = GM_getValue(STORAGE_KEY, []);
-  if (!Array.isArray(history)) history = [];
+  const JUNK_PARAMS = new Set([
+    'spm_id_from', 'vd_source', 'trackid', 'track_id', 'query_from',
+    'search_id', 'search_query', 'csource', 'share_source', 'caid',
+    'request_id', 'resource_id', 'source_id', 'from_spmid', 'creative_id',
+    'linked_creative_id',
+  ]);
+
+  let historyData = GM_getValue(STORAGE_KEY, []);
+  if (!Array.isArray(historyData)) historyData = [];
 
   let mode = 'live';              // 'live' 或 'replay'
-  let historyIndex = history.length ? history.length - 1 : -1;
+  let historyIndex = historyData.length ? historyData.length - 1 : -1;
 
   let bar;                        // 我们的控件栏
   let refreshBtn;                 // B站“换一换”按钮
   let internalTrigger = false;    // 区分脚本自身触发的点击
 
-  // [优化] 缓存 matchMedia 实例，避免高频触发重建
+  // 缓存 matchMedia 实例
   const darkModeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
-  /* ========== 工具函数 ========== */
-
-  function isDarkMode() {
-    if (darkModeQuery) return darkModeQuery.matches;
-    // [优化] 尽量减少 getComputedStyle 的调用
-    const bg = getComputedStyle(document.body).backgroundColor || '';
-    return bg.includes('0, 0, 0') || bg.includes('24, 24, 24');
-  }
-
-  function createNavButton(text, borderRadius) {
-    const btn = document.createElement('button');
-    const dark = isDarkMode();
-
-    btn.textContent = text;
-    // [优化] 将不会变动的样式直接设置好
-    Object.assign(btn.style, {
-      borderRadius: borderRadius,
-      padding: '6px 8px',
-      cursor: 'pointer',
-      transition: 'all 0.15s ease',
-      fontWeight: '500',
-      userSelect: 'none',
-      fontSize: '12px',
-      outline: 'none',
-      boxShadow: 'none',
-      border: 'none',
-      backgroundClip: 'padding-box'
-    });
-
-    if (dark) {
-      btn.style.background = 'rgba(40,40,40,0.7)';
-      btn.style.color = 'rgba(240,240,240,0.9)';
-    } else {
-      btn.style.background = 'transparent';
-      btn.style.color = 'rgba(90,90,90,0.9)';
-    }
-
-    btn.addEventListener('mouseenter', () => {
-      if (isDarkMode()) {
-        btn.style.background = 'rgba(55,55,55,0.9)';
-        btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.6)';
-      } else {
-        btn.style.background = 'rgba(0,0,0,0.04)';
-        btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
-      }
-      btn.style.transform = 'scale(1.02)';
-    });
-
-    btn.addEventListener('mouseleave', () => {
-      btn.style.background = isDarkMode() ? 'rgba(40,40,40,0.7)' : 'transparent';
-      btn.style.boxShadow = 'none';
-      btn.style.transform = 'scale(1)';
-    });
-
-    btn.addEventListener('mousedown', () => {
-      btn.style.transform = 'scale(0.96)';
-    });
-
-    btn.addEventListener('mouseup', () => {
-      btn.style.transform = 'scale(1.02)';
-    });
-
-    return btn;
-  }
-
-  function updateBtnDisabled(btn, disabled) {
-    if (btn.disabled === disabled) return; // [优化] 避免无意义的 DOM 更新
-    btn.disabled = disabled;
-    btn.style.opacity = disabled ? '0.35' : '1';
-    btn.style.cursor = disabled ? 'default' : 'pointer';
-  }
-
-  /* ========== 历史管理 ========== */
-
-  function persistHistory() {
-    GM_setValue(STORAGE_KEY, history);
-    bindHistoryToPageContext();
-    updateBarUI();
-  }
-
-  function saveHistory(json) {
-    history.push(json);
-    while (history.length > MAX_HISTORY) {history.shift();}
-    historyIndex = history.length - 1;
-    persistHistory();
-  }
-
-  /* ========== 与页面通信：注入 fetch hook ========== */
-
+  /* ========== 1. 底层拦截：Fetch Proxy 注入 ========== */
   function injectHook() {
     const hookCode = `
       (function() {
         const RCMD_PATH = ${JSON.stringify(RCMD_PATH)};
-        const ORIGIN_FETCH = window.fetch;
-
         window.__RCMD_HISTORY_CTRL__ = window.__RCMD_HISTORY_CTRL__ || {
           mode: 'live',
           index: -1,
           dataMap: {}
         };
 
-        window.fetch = function(input, init) {
-          const url = typeof input === 'string' ? input : input && input.url;
-          if (url && url.includes(RCMD_PATH)) {
-            const ctrl = window.__RCMD_HISTORY_CTRL__;
+        // 使用 Proxy 现代代理模式，隐蔽性极强且不丢失原生绑定
+        window.fetch = new Proxy(window.fetch, {
+          apply: function(target, thisArg, argumentsList) {
+            const [input, init] = argumentsList;
+            const url = typeof input === 'string' ? input : input && input.url;
 
-            if (ctrl.mode === 'replay' && ctrl.index in ctrl.dataMap) {
-              const json = ctrl.dataMap[ctrl.index];
-              return Promise.resolve(new Response(JSON.stringify(json), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-              }));
+            if (url && url.includes(RCMD_PATH)) {
+              const ctrl = window.__RCMD_HISTORY_CTRL__;
+
+              // 回放模式：直接返回历史 JSON
+              if (ctrl.mode === 'replay' && ctrl.index in ctrl.dataMap) {
+                const json = ctrl.dataMap[ctrl.index];
+                return Promise.resolve(new Response(JSON.stringify(json), {
+                  status: 200,
+                  headers: { 'Content-Type': 'application/json' }
+                }));
+              }
+
+              // 实时模式：正常请求并抓包
+              return Reflect.apply(target, thisArg, argumentsList).then(res => {
+                try {
+                  res.clone().json().then(json => {
+                    window.postMessage({
+                      type: 'RCMD_HISTORY_SNAPSHOT',
+                      payload: json
+                    }, '*');
+                  });
+                } catch (e) {}
+                return res;
+              });
             }
 
-            return ORIGIN_FETCH(input, init).then(res => {
-              try {
-                const cloned = res.clone();
-                cloned.json().then(json => {
-                  window.postMessage({
-                    type: 'RCMD_HISTORY_SNAPSHOT',
-                    payload: json
-                  }, '*');
-                });
-              } catch (e) {}
-              return res;
-            });
+            // 其他请求直接放行
+            return Reflect.apply(target, thisArg, argumentsList);
           }
-          return ORIGIN_FETCH(input, init);
-        };
+        });
       })();
     `;
     const s = document.createElement('script');
     s.textContent = hookCode;
+    // 注入后立刻移除 script 标签，保持 DOM 干净
     document.documentElement.appendChild(s);
     s.remove();
   }
 
+  /* ========== 2. 状态通信与同步 ========== */
   function setupMessageListener() {
     window.addEventListener('message', ev => {
       if (!ev.data || ev.data.type !== 'RCMD_HISTORY_SNAPSHOT') return;
       const json = ev.data.payload;
       if (!json || mode !== 'live') return;
-      saveHistory(json);
+
+      historyData.push(json);
+      while (historyData.length > MAX_HISTORY) { historyData.shift(); }
+      historyIndex = historyData.length - 1;
+
+      GM_setValue(STORAGE_KEY, historyData);
+      bindHistoryToPageContext();
+      updateBarUI();
     });
   }
 
   function bindHistoryToPageContext() {
-    const dataMap = history.reduce((acc, item, idx) => {
+    const dataMap = historyData.reduce((acc, item, idx) => {
       acc[idx] = item;
       return acc;
     }, {});
@@ -193,6 +129,59 @@
     script.remove();
   }
 
+  /* ========== 3. UI 渲染与控制 ========== */
+  function isDarkMode() {
+    if (darkModeQuery) return darkModeQuery.matches;
+    const bg = getComputedStyle(document.body).backgroundColor || '';
+    return bg.includes('0, 0, 0') || bg.includes('24, 24, 24');
+  }
+
+  function createNavButton(text, borderRadius) {
+    const btn = document.createElement('button');
+    const dark = isDarkMode();
+
+    btn.textContent = text;
+    Object.assign(btn.style, {
+      borderRadius: borderRadius,
+      padding: '6px 8px',
+      cursor: 'pointer',
+      transition: 'all 0.15s ease',
+      fontWeight: '500',
+      userSelect: 'none',
+      fontSize: '12px',
+      outline: 'none',
+      boxShadow: 'none',
+      border: 'none',
+      backgroundClip: 'padding-box',
+      background: dark ? 'rgba(40,40,40,0.7)' : 'transparent',
+      color: dark ? 'rgba(240,240,240,0.9)' : 'rgba(90,90,90,0.9)'
+    });
+
+    btn.addEventListener('mouseenter', () => {
+      btn.style.background = isDarkMode() ? 'rgba(55,55,55,0.9)' : 'rgba(0,0,0,0.04)';
+      btn.style.boxShadow = isDarkMode() ? '0 1px 3px rgba(0,0,0,0.6)' : '0 1px 3px rgba(0,0,0,0.12)';
+      btn.style.transform = 'scale(1.02)';
+    });
+
+    btn.addEventListener('mouseleave', () => {
+      btn.style.background = isDarkMode() ? 'rgba(40,40,40,0.7)' : 'transparent';
+      btn.style.boxShadow = 'none';
+      btn.style.transform = 'scale(1)';
+    });
+
+    btn.addEventListener('mousedown', () => { btn.style.transform = 'scale(0.96)'; });
+    btn.addEventListener('mouseup', () => { btn.style.transform = 'scale(1.02)'; });
+
+    return btn;
+  }
+
+  function updateBtnDisabled(btn, disabled) {
+    if (btn.disabled === disabled) return;
+    btn.disabled = disabled;
+    btn.style.opacity = disabled ? '0.35' : '1';
+    btn.style.cursor = disabled ? 'default' : 'pointer';
+  }
+
   function setMode(newMode) {
     if (mode === newMode) return;
     mode = newMode;
@@ -201,7 +190,7 @@
   }
 
   function setIndex(newIndex) {
-    if (newIndex < 0 || newIndex >= history.length) return;
+    if (newIndex < 0 || newIndex >= historyData.length) return;
     historyIndex = newIndex;
     bindHistoryToPageContext();
     updateBarUI();
@@ -213,26 +202,16 @@
     refreshBtn.click();
   }
 
-  /* ========== UI：按钮栏 & 信息 ========== */
-
   function updateBarUI() {
     if (!bar) return;
-
     const info = bar.querySelector('.my-rcmd-info');
     const prevBtn = bar.querySelector('.my-rcmd-prev');
     const nextBtn = bar.querySelector('.my-rcmd-next');
 
-    updateBtnDisabled(prevBtn, history.length === 0 || historyIndex <= 0);
-    updateBtnDisabled(nextBtn, history.length === 0 || historyIndex >= history.length - 1);
-
-    // [优化] 移除了高频赋值的静态样式，且避免频繁重写 innerHTML，改用 textContent
+    updateBtnDisabled(prevBtn, historyData.length === 0 || historyIndex <= 0);
+    updateBtnDisabled(nextBtn, historyData.length === 0 || historyIndex >= historyData.length - 1);
     info.style.color = isDarkMode() ? '#d0d0d0' : '#666666';
-
-    if (!history.length) {
-      info.textContent = '';
-    } else {
-      info.textContent = `${historyIndex + 1} / ${history.length}`;
-    }
+    info.textContent = historyData.length ? `${historyIndex + 1} / ${historyData.length}` : '';
   }
 
   function addBarNearRefresh() {
@@ -240,27 +219,16 @@
     if (!refreshBtn || bar) return;
 
     const dark = isDarkMode();
-
     bar = document.createElement('div');
     bar.className = 'my-rcmd-bar';
-    // [优化] 所有不会变动的静态样式都在此处一次性赋好
     Object.assign(bar.style, {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '4px',
-      marginTop: '8px',
-      userSelect: 'none',
-      writingMode: 'horizontal-tb',
-      textOrientation: 'mixed'
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+      marginTop: '8px', userSelect: 'none', writingMode: 'horizontal-tb', textOrientation: 'mixed'
     });
 
     const btnGroup = document.createElement('div');
     Object.assign(btnGroup.style, {
-      display: 'inline-flex',
-      gap: '0',
-      borderRadius: '18px',
-      overflow: 'hidden',
+      display: 'inline-flex', gap: '0', borderRadius: '18px', overflow: 'hidden',
       border: dark ? '1px solid rgba(255,255,255,0.25)' : '1px solid rgba(0,0,0,0.14)',
       background: dark ? 'rgba(20,20,20,0.9)' : 'rgba(255,255,255,0.98)',
       boxShadow: dark ? '0 1px 4px rgba(0,0,0,0.7)' : '0 1px 4px rgba(0,0,0,0.16)'
@@ -268,7 +236,6 @@
 
     const prevBtn = createNavButton('◀', '18px 0 0 18px');
     prevBtn.className = 'my-rcmd-prev';
-
     const nextBtn = createNavButton('▶', '0 18px 18px 0');
     nextBtn.className = 'my-rcmd-next';
 
@@ -278,33 +245,23 @@
     const info = document.createElement('span');
     info.className = 'my-rcmd-info';
     Object.assign(info.style, {
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      whiteSpace: 'nowrap',
-      gap: '4px',
-      fontSize: '12px',
-      opacity: '0.85'
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      whiteSpace: 'nowrap', gap: '4px', fontSize: '12px', opacity: '0.85'
     });
 
     bar.appendChild(btnGroup);
     bar.appendChild(info);
-
     refreshBtn.parentNode.insertBefore(bar, refreshBtn.nextSibling);
 
     prevBtn.addEventListener('click', () => {
       if (historyIndex > 0) {
-        setMode('replay');
-        setIndex(historyIndex - 1);
-        triggerReplayRefresh();
+        setMode('replay'); setIndex(historyIndex - 1); triggerReplayRefresh();
       }
     });
 
     nextBtn.addEventListener('click', () => {
-      if (historyIndex < history.length - 1) {
-        setMode('replay');
-        setIndex(historyIndex + 1);
-        triggerReplayRefresh();
+      if (historyIndex < historyData.length - 1) {
+        setMode('replay'); setIndex(historyIndex + 1); triggerReplayRefresh();
       }
     });
 
@@ -319,54 +276,71 @@
     updateBarUI();
   }
 
+  /* ========== 4. MutationObserver 零轮询 ========== */
   function waitForRefreshBtn() {
-    // [优化] 如果不是首页则停止轮询，防止在视频播放页等无关页面死循环吃性能
     if (location.pathname !== '/' && location.pathname !== '/index.html') return;
 
-    let attempts = 0;
-    const timer = setInterval(() => {
-      attempts++;
+    if (document.querySelector('.roll-btn')) {
+      addBarNearRefresh();
+      return;
+    }
+
+    const observer = new MutationObserver((mutations, obs) => {
       if (document.querySelector('.roll-btn')) {
-        clearInterval(timer);
         addBarNearRefresh();
-      } else if (attempts > 60) {
-        // [优化] 超过 30 秒如果还没找到元素也停止定时器
-        clearInterval(timer);
+        obs.disconnect(); // 找到后立刻释放
       }
-    }, 500);
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // 兜底：15秒没刷出来主动放弃观察
+    setTimeout(() => observer.disconnect(), 15000);
   }
 
-  /* ========== 启动 ========== */
+  /* ========== 5. 链接预净化 (源头阻断) ========== */
+  function setupLinkPreCleaner() {
+    document.addEventListener('mousedown', function(e) {
+      const a = e.target.closest('a');
+      if (!a || !a.href || !a.href.startsWith('http')) return;
 
-  injectHook();
-  setupMessageListener();
-  bindHistoryToPageContext();
-  waitForRefreshBtn();
-})();
+      if (a.href.includes('?')) {
+        try {
+          let mightHaveJunk = false;
+          for (const key of JUNK_PARAMS) {
+            if (a.href.includes(key + '=')) {
+              mightHaveJunk = true;
+              break;
+            }
+          }
+          if (!mightHaveJunk) return;
 
+          const url = new URL(a.href);
+          let changed = false;
+          for (const key of JUNK_PARAMS) {
+            if (url.searchParams.has(key)) {
+              url.searchParams.delete(key);
+              changed = true;
+            }
+          }
+          if (changed) {
+            a.href = url.toString().replace(/\?$/, '');
+          }
+        } catch (err) {}
+      }
+    }, { passive: true, capture: true }); // 在捕获阶段处理，确保在跳转发生前完成修改
+  }
 
-(function () {
-  'use strict';
-
-  const JUNK_PARAMS = new Set([
-    'spm_id_from', 'vd_source', 'trackid', 'track_id', 'query_from',
-    'search_id', 'search_query', 'csource', 'share_source', 'caid',
-    'request_id', 'resource_id', 'source_id', 'from_spmid', 'creative_id',
-    'linked_creative_id',
-  ]);
-
+  /* ========== 6. 地址栏兜底清理 ========== */
   function cleanCurrentUrl() {
     try {
-      if (!location.search) return; // [优化] 没有参数直接跳过，降低开销
+      if (!location.search) return;
       const url = new URL(location.href);
       let changed = false;
-
-      // [优化] 直接遍历 keys 迭代器，避免使用 Array.from 产生中间垃圾数组
       const keysToDelete = [];
+
       for (const key of url.searchParams.keys()) {
-        if (JUNK_PARAMS.has(key)) {
-          keysToDelete.push(key);
-        }
+        if (JUNK_PARAMS.has(key)) keysToDelete.push(key);
       }
 
       if (keysToDelete.length > 0) {
@@ -375,22 +349,17 @@
       }
 
       if (changed) {
-        const finalUrl = url.toString().replace(/\?$/, '');
-        history.replaceState(history.state, '', finalUrl);
+        history.replaceState(history.state, '', url.toString().replace(/\?$/, ''));
       }
-    } catch (e) {
-      console.log('[bili-url-cleaner] clean error', e);
-    }
+    } catch (e) {}
   }
 
   function wrapHistoryMethod(name) {
     const raw = history[name];
     if (!raw) return;
-
     history[name] = function (state, title, url) {
       if (typeof url === 'string' && url.includes('?')) {
         try {
-          // [优化] 在进行昂贵的 URL 解析前，使用低成本字符串预判断
           let mightHaveJunk = false;
           for (const param of JUNK_PARAMS) {
             if (url.includes(param + '=')) {
@@ -398,16 +367,12 @@
               break;
             }
           }
-
           if (mightHaveJunk) {
             const u = new URL(url, location.origin);
             let changed = false;
             const keysToDelete = [];
-
             for (const key of u.searchParams.keys()) {
-              if (JUNK_PARAMS.has(key)) {
-                keysToDelete.push(key);
-              }
+              if (JUNK_PARAMS.has(key)) keysToDelete.push(key);
             }
             if (keysToDelete.length > 0) {
               keysToDelete.forEach(k => u.searchParams.delete(k));
@@ -419,19 +384,25 @@
           }
         } catch (e) {}
       }
-
       const ret = raw.apply(this, [state, title, url]);
       cleanCurrentUrl();
       return ret;
     };
   }
 
-  cleanCurrentUrl();
+  /* ========== 启动 ========== */
+  injectHook();                  // 1. 注入 Fetch 劫持
+  setupMessageListener();        // 2. 监听抓包回传
+  bindHistoryToPageContext();    // 3. 同步历史状态到网页
+  waitForRefreshBtn();           // 4. 等待UI渲染
+
+  setupLinkPreCleaner();         // 5. 启动点击预净化
+  cleanCurrentUrl();             // 6. 初始清理当前URL
   wrapHistoryMethod('pushState');
   wrapHistoryMethod('replaceState');
 
+  // 极低频兜底（防跳转遗漏），仅限有参数时运行
   setInterval(() => {
-    // [优化] 1.5秒一次的定时器，仅当 URL 可能存在垃圾参数时才触发解析逻辑
     if (!location.search) return;
     for (const param of JUNK_PARAMS) {
       if (location.search.includes(param + '=')) {
@@ -439,5 +410,6 @@
         break;
       }
     }
-  }, 1500);
+  }, 2000);
+
 })();
