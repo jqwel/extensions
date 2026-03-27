@@ -292,7 +292,9 @@
       }
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    // 【修复点】：在 document-start 阶段 document.body 为 null，
+    // 改为监听 document.documentElement 或 document 本身
+    observer.observe(document.documentElement || document, { childList: true, subtree: true });
 
     // 兜底：15秒没刷出来主动放弃观察
     setTimeout(() => observer.disconnect(), 15000);
