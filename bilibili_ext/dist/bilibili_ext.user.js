@@ -392,12 +392,53 @@
     };
   }
 
+  /* ========== 7. 稍后再看页面自动请求与跳转 (逻辑精简版) ========== */
+  function handleWatchLater() {
+    if (!location.href.includes('bilibili.com/list/watchlater')) return;
+
+    const url = new URL(location.href);
+    const bvid = url.searchParams.get('bvid');
+    if (!bvid) return;
+
+    console.log(`[脚本日志] 正在检索视频 ${bvid} 的分 P 信息...`);
+
+    fetch(`https://api.bilibili.com/x/v2/history/toview`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': 'application/json' }
+    })
+        .then(res => res.json())
+        .then(data => {
+          if (!data || data.code !== 0) return;
+
+          const list = data?.data?.list;
+          if (!Array.isArray(list)) return;
+
+          // 查找匹配的视频对象
+          const targetVideo = list.find(item => item.bvid === bvid);
+
+          if (targetVideo) {
+            // 1. 按照你的要求：使用 ?? 0 容错
+            const page = targetVideo.page?.page ?? 0;
+
+            // 2. 只有当 page > 1 时才拼接 p 参数，否则直接跳转主链接
+            const targetUrl = page > 1
+                ? `https://www.bilibili.com/video/${bvid}/?p=${page}`
+                : `https://www.bilibili.com/video/${bvid}/`;
+
+            console.log(`[脚本日志] 跳转目标: ${targetUrl}`);
+            location.replace(targetUrl);
+          }
+        })
+        .catch(err => console.error('[脚本日志] 稍后再看请求失败:', err));
+  }
+
   /* ========== 启动 ========== */
+  handleWatchLater();            // 0. 处理稍后再看页面逻辑
   injectHook();                  // 1. 注入 Fetch 劫持
   setupMessageListener();        // 2. 监听抓包回传
   bindHistoryToPageContext();    // 3. 同步历史状态到网页
   waitForRefreshBtn();           // 4. 等待UI渲染
-
   setupLinkPreCleaner();         // 5. 启动点击预净化
   cleanCurrentUrl();             // 6. 初始清理当前URL
   wrapHistoryMethod('pushState');
