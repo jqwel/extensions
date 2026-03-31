@@ -18,7 +18,7 @@
 - 支持Chrome扩展,在[focus_booster](focus_booster)文件夹开发者模式加载。
 
 ## bilibili_ext
-- 换一换历史导航,安装URL: https://github.com/jqwel/extensions/raw/refs/heads/main/bilibili_ext/dist/bilibili_ext.user.js
+- B站首页推荐回溯与极致净化 (稍后再看自动跳转),安装URL: https://github.com/jqwel/extensions/raw/refs/heads/main/bilibili_ext/dist/bilibili_ext.user.js
 
 
 ## 🚀 快速开始
