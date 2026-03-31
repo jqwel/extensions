@@ -1,13 +1,14 @@
 // ==UserScript==
-// @name         B站首页推荐回溯 (API 历史回放) - 极致强化版
+// @name         B站首页推荐回溯与极致净化 (稍后再看自动跳转)
 // @namespace    http://tampermonkey.net/
-// @version      2.0
-// @description  Proxy无痕劫持、MutationObserver零轮询、A标签预净化源头阻断追踪、支持左右键回放
+// @version      2.2
+// @description  1.【推荐回溯】Proxy无痕劫持API，支持首页左右键回访历史推荐；2.【精准跳转】自动检测“稍后再看”列表页，直接中转至对应视频页并自动识别分P；3.【极致净化】A标签预净化+地址栏补丁，源头阻断spm_id等追踪参数；4.【零感注入】MutationObserver零轮询监听，样式自适应黑暗模式。
 // @match        https://www.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @run-at       document-start
+// @license      MIT
 // ==/UserScript==
 
 (function () {
