@@ -102,7 +102,9 @@ setInterval(debouncedHandleShadowRoots, 600)
 
 function findDivsWithAdSlugAndContent(shadowRoot) {
   const result = [];
-  ['.card-outer:has(.ad-slug)', '.card-content:has(.ad-slug)', ".content-card-container:has(.ad-label)"].forEach(val => {
+  ['.card-outer:has(.ad-slug)', '.card-content:has(.ad-slug)', ".content-card-container:has(.ad-label)",
+    ".displayAdContainer:has(.displayAdWCContainer)"
+  ].forEach(val => {
     // 查找所有具有 content class 的 div
     const divsWithContent = shadowRoot.querySelectorAll(val);
     // 过滤出包含 .ad-slug 的 div
