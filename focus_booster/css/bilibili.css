@@ -1,7 +1,8 @@
 .bili-video-card__wrap:has(.bili-video-card__info--ad),
 .bili-video-card__wrap:has(.ad-feedback-entry),
 .bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]),
-.ad-report {
+.ad-report,
+.vui_carousel__slide:has(> .carousel-area):has(img[src*="i0.hdslb.com/bfs/static/jinkela/long/images/eva.png"]) {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     /*overflow: hidden;*/
@@ -13,7 +14,8 @@
 .bili-video-card__wrap:has(.bili-video-card__info--ad):hover,
 .bili-video-card__wrap:has(.ad-feedback-entry):hover,
 .bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]):hover,
-.ad-report:hover { /*:hover*/
+.ad-report:hover,
+.vui_carousel__slide:has(> .carousel-area):has(img[src*="i0.hdslb.com/bfs/static/jinkela/long/images/eva.png"]):hover { /*:hover*/
     filter: blur(0px) !important;
     /*overflow: visible;*/
     /*border: none;*/
@@ -22,7 +24,8 @@
 .bili-video-card__wrap:has(.bili-video-card__info--ad)::after,
 .bili-video-card__wrap:has(.ad-feedback-entry)::after,
 .bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"])::after,
-.ad-report::after { /*::after*/
+.ad-report::after,
+.vui_carousel__slide:has(> .carousel-area):has(img[src*="i0.hdslb.com/bfs/static/jinkela/long/images/eva.png"])::after { /*::after*/
     content: "广告";
     position: absolute;
     top: 50%;
@@ -55,6 +58,7 @@
 .bili-video-card__wrap:has(.bili-video-card__info--ad):hover::after,
 .bili-video-card__wrap:has(.ad-feedback-entry):hover::after,
 .bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"]):hover::after,
-.ad-report:hover::after { /*:hover::after*/
+.ad-report:hover::after,
+.vui_carousel__slide:has(> .carousel-area):has(img[src*="i0.hdslb.com/bfs/static/jinkela/long/images/eva.png"]):hover::after { /*:hover::after*/
     animation: fadeInOut 1s ease-in-out 2; /* 应用动画 */
 }

@@ -77,6 +77,7 @@ func main() {
 				".bili-video-card__wrap:has(.ad-feedback-entry)",
 				`.bili-video-card__wrap:has(.bili-video-card__image--link[href*="cm.bilibili.com/cm/api"])`,
 				`.ad-report`,
+				`.vui_carousel__slide:has(> .carousel-area):has(img[src*="i0.hdslb.com/bfs/static/jinkela/long/images/eva.png"])`,
 			},
 		},
 		{
