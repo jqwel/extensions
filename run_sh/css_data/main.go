@@ -85,6 +85,7 @@ func main() {
 			Filename: "bing.css",
 			Selectors: []string{
 				`.sb_adTA`,
+				`li.b_ad`,
 			},
 		},
 		{
@@ -193,6 +194,7 @@ func main() {
 				`.art-container:has(.feed-item-close)`,
 				`[class^="shopWindow_shopWindowAd"]:not([class^="shopWindow_shopWindowAd"] [class^="shopWindow_shopWindowAd"])`, // `:is([class^="shopWindow_shopWindowAd"])`,
 				`.sdk-ad`,
+				`#side-banner-ad`,
 				`#ad-top-static-banner`,
 				`#ad_result_right`,
 				`#opening-ad`,

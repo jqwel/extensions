@@ -1,4 +1,5 @@
-.sb_adTA {
+.sb_adTA,
+li.b_ad {
     filter: blur(var(--blur-amount)) !important;
     transition: filter var(--filter-transition-duration) var(--filter-transition-timing);
     /*overflow: hidden;*/
@@ -7,13 +8,15 @@
     mask-repeat: no-repeat;
 }
 
-.sb_adTA:hover { /*:hover*/
+.sb_adTA:hover,
+li.b_ad:hover { /*:hover*/
     filter: blur(0px) !important;
     /*overflow: visible;*/
     /*border: none;*/
 }
 
-.sb_adTA::after { /*::after*/
+.sb_adTA::after,
+li.b_ad::after { /*::after*/
     content: "广告";
     position: absolute;
     top: 50%;
@@ -43,6 +46,7 @@
     opacity: 0;
 }
 
-.sb_adTA:hover::after { /*:hover::after*/
+.sb_adTA:hover::after,
+li.b_ad:hover::after { /*:hover::after*/
     animation: fadeInOut 1s ease-in-out 2; /* 应用动画 */
 }
