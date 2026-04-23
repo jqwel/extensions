@@ -32,6 +32,7 @@ func main() {
 				`div:has(> iframe[src*="googleads.g.doubleclick.net/"])`,
 				`div:has(> iframe[src^="https://pos.baidu.com/"])`,
 				`div:has(> iframe[src^="//pos.baidu.com/"])`,
+				`img[src*="//ad.adsrvr.org/"]`,
 				`.advertise`,
 				`div:has(> img[class*="-ad-"]) a`,
 				`a:has(> img[class*="-ad-"])`,
